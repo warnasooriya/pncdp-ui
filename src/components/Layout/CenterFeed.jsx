@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Box, Stack, Card, CardContent, CardMedia, Typography, IconButton, Divider } from '@mui/material';
+import { Box, Stack, Card, CardContent, CardMedia, Typography, IconButton, Divider, TextField,Button  } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import Avatar from '@mui/material/Avatar';
+import ImageIcon from '@mui/icons-material/Image';
 
 const CenterFeed = () => {
   // Dummy feed posts
-  const [posts] = useState([
+  const [posts, setPosts] = useState([
     {
       id: 1,
       name: 'Johnathan Reed',
@@ -49,10 +50,102 @@ const CenterFeed = () => {
     }
   ]);
   
+ 
+  const [newPostText, setNewPostText] = useState('');
+  const [newPostMedia, setNewPostMedia] = useState(null);
+  const [newPostMediaType, setNewPostMediaType] = useState(null);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const blobURL = URL.createObjectURL(file);
+      setNewPostMedia(blobURL);
+      setNewPostMediaType(file.type.startsWith('video') ? 'video' : 'image');
+    }
+  };
+
+  const handleAddPost = () => {
+    if (newPostText.trim() === '') return;
+
+    const newPost = {
+      id: posts.length + 1,
+      name: 'You',
+      title: 'Posting as yourself',
+      avatar: 'https://randomuser.me/api/portraits/lego/5.jpg',
+      description: newPostText.trim(),
+      media: newPostMedia,
+      mediaType: newPostMediaType,
+    };
+
+    setPosts([newPost, ...posts]);
+    setNewPostText('');
+    setNewPostMedia(null);
+    setNewPostMediaType(null);
+  };
 
   return (
     <Box sx={{ width: { xs: '100%', md: '55%' } }}>
       <Stack spacing={2}>
+         {/* New Post Section */}
+         <Card variant="outlined" sx={{ p: 2 }}>
+          <Stack spacing={2}>
+            <TextField
+              placeholder="What's on your mind?"
+              multiline
+              minRows={3}
+              value={newPostText}
+              onChange={(e) => setNewPostText(e.target.value)}
+              fullWidth
+            />
+
+            {/* Upload Image/Video */}
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<ImageIcon />}
+                sx={{ textTransform: 'none' }}
+              >
+                Upload Image/Video
+                <input
+                  hidden
+                  accept="image/*,video/*"
+                  type="file"
+                  onChange={handleFileChange}
+                />
+              </Button>
+
+              <Button 
+                variant="contained" 
+                onClick={handleAddPost}
+                disabled={newPostText.trim() === ''}
+                sx={{ textTransform: 'none' }}
+              >
+                Post
+              </Button>
+            </Stack>
+
+            {/* Media Preview */}
+            {newPostMedia && (
+              newPostMediaType === 'image' ? (
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={newPostMedia}
+                  alt="Uploaded preview"
+                  sx={{ borderRadius: 2 }}
+                />
+              ) : (
+                <CardMedia
+                  component="video"
+                  height="200"
+                  controls
+                  src={newPostMedia}
+                  sx={{ borderRadius: 2 }}
+                />
+              )
+            )}
+          </Stack>
+        </Card>
         {posts.map((post) => (
           <Card key={post.id} variant="outlined">
             <CardContent sx={{ pb: 1 }}>
