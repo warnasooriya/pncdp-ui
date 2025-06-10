@@ -1,54 +1,94 @@
 import React from 'react';
-import { Box, Stack, Card, Typography, Button, Avatar, Divider } from '@mui/material';
+import { Box, Stack, Card, Typography, Divider, Avatar, Button } from '@mui/material';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 
 const RightSidebar = () => {
-  // Dummy people you may know data
-  const people = [
-    { name: 'Jane Smith', title: 'Product Manager', avatar: '' },
-    { name: 'Michael Brown', title: 'UI/UX Designer', avatar: '' },
-    { name: 'David Lee', title: 'Software Engineer', avatar: '' },
-  ];
-
   return (
     <Box sx={{ width: '25%', display: { xs: 'none', md: 'block' } }}>
       <Stack spacing={2}>
-        {/* People You May Know */}
-        <Card variant="outlined" sx={{ p: 2 }}>
-          <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-            People You May Know
-          </Typography>
-          <Stack spacing={2}>
-            {people.map((person, index) => (
-              <Stack key={index} direction="row" alignItems="center" spacing={2}>
-                <Avatar src={person.avatar} alt={person.name} />
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {person.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {person.title}
-                  </Typography>
-                </Box>
-                <Button variant="contained" size="small" sx={{ textTransform: 'none', backgroundColor: '#283593' }}>
-                  Connect
-                </Button>
-              </Stack>
-            ))}
-          </Stack>
-        </Card>
 
         {/* Trending Topics */}
-        <Card variant="outlined" sx={{ p: 2 }}>
+        <Card variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
           <Typography variant="subtitle1" fontWeight="bold" mb={2}>
             Trending Topics
           </Typography>
           <Stack spacing={1}>
-            <Typography variant="body2" color="primary">#AI</Typography>
-            <Typography variant="body2" color="primary">#ReactJS</Typography>
-            <Typography variant="body2" color="primary">#CareerGrowth</Typography>
-            <Typography variant="body2" color="primary">#Blockchain</Typography>
+            {['#cloudcomputing', '#software', '#marketing', '#ai', '#cybersecurity'].map((topic, index) => (
+              <Typography key={index} variant="body2" color="primary" sx={{ cursor: 'pointer' }}>
+                {topic}
+              </Typography>
+            ))}
           </Stack>
         </Card>
+
+        {/* Jobs for You */}
+        <Card variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+          <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+            Jobs for You
+          </Typography>
+          <Stack spacing={2}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <WorkOutlineIcon sx={{ color: '#5e5e5e' }} />
+              <Box>
+                <Typography variant="body2" fontWeight="bold">
+                  Frontend Developer
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Web Solutions
+                </Typography>
+              </Box>
+            </Stack>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <WorkOutlineIcon sx={{ color: '#5e5e5e' }} />
+              <Box>
+                <Typography variant="body2" fontWeight="bold">
+                  Product Manager
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  InnovateHub
+                </Typography>
+              </Box>
+            </Stack>
+          </Stack>
+        </Card>
+
+        {/* Upcoming Events */}
+        <Card variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+          <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+            Upcoming Events
+          </Typography>
+          <Stack spacing={2}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <EventNoteIcon sx={{ color: '#5e5e5e' }} />
+              <Box>
+                <Typography variant="body2" fontWeight="bold">
+                  Tech Conference 2024
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  May 10
+                </Typography>
+              </Box>
+            </Stack>
+          </Stack>
+        </Card>
+
+        {/* Advertisement Card */}
+        <Card variant="outlined" sx={{ p: 2, borderRadius: 3, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            Advertisement
+          </Typography>
+          <Avatar
+            src="https://source.unsplash.com/featured/?technology"
+            alt="Ad"
+            variant="rounded"
+            sx={{ width: '100%', height: 100, my: 2, borderRadius: 2 }}
+          />
+          <Button variant="outlined" size="small" sx={{ textTransform: 'none', borderRadius: 2 }}>
+            Learn More
+          </Button>
+        </Card>
+
       </Stack>
     </Box>
   );
