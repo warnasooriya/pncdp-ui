@@ -8,6 +8,10 @@ import JobsPage from './pages/JobsPage';
 // import LoginPage from './pages/LoginPage'; // We'll create a basic one now
 
 function App() {
+
+  localStorage.setItem('userId',  
+    '6852d7ce3099ab2be9db498e');
+
   return (
     <Routes>
       {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
