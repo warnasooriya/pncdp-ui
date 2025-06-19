@@ -1,17 +1,21 @@
-import React from 'react';
+import React    from 'react';
 import { Box, Card, Stack, Typography, Button, Avatar, Divider, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import GroupIcon from '@mui/icons-material/Group';
 import WorkIcon from '@mui/icons-material/Work';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import { useNavigate } from 'react-router-dom';
+import {  useSelector } from 'react-redux';
 
 const LeftSidebar = () => {
+   const profile = useSelector(state => state.profileReducer.profile);
   const navigate = useNavigate();
 
   const linkToProfile = () => {
     navigate('/profile');
   };
+
+ 
 
   return (
     <Box sx={{ width: '20%', display: { xs: 'none', md: 'block' } }}>
@@ -23,14 +27,14 @@ const LeftSidebar = () => {
           <Box sx={{ mt: -5 }}>
             <Avatar
               sx={{ width: 80, height: 80, mx: 'auto', border: '3px solid white' }}
-              src="https://randomuser.me/api/portraits/men/32.jpg"
+              src={profile?.profileImage || 'https://via.placeholder.com/80'}
               alt="Profile"
             />
             <Typography variant="subtitle1" fontWeight="bold" mt={1}>
-              John Doe
+              {profile?.fullName }
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Software Engineer
+              {profile?.headline }
             </Typography>
             <Button
               variant="contained"

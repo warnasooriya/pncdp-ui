@@ -13,36 +13,43 @@ import {
 } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import EditIcon from '@mui/icons-material/Edit';
-
+import {  useDispatch,useSelector } from 'react-redux';
 import axios from '../../api/axios';
+import { setField } from '../../reducers/profileReducer';
+import LoadingOverlay from '../common/LoadingOverlay';
 
 const ProfileOverview = () => {
-
+   
+  const dispatch = useDispatch();
   const [profileImage, setProfileImage] = useState(null);
   const [bannerImage, setBannerImage] = useState(null);
   const [fullName, setFullName] = useState('');
   const [headline, setHeadline] = useState('');
    const [userId] = useState(localStorage.getItem('userId')); // Assuming user ID is stored in localStorage
   const [isEditing, setIsEditing] = useState(false);
-
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [bannerImageFile, setBannerImageFile] = useState(null);
- 
+  const profileReducer = useSelector(state => state.profileReducer);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch profile on mount
-  useEffect(() => {
-    
-    console.log("user is", userId);
-    axios.get('/api/profile')
-      .then(res => {
-        const { fullName, headline, profileImage, bannerImage } = res.data;
-        setFullName(fullName);
-        setHeadline(headline);
-        setProfileImage(profileImage);
-        setBannerImage(bannerImage);
-      })
-      .catch(err => console.error('Error fetching profile', err));
-  }, []);
+ useEffect(() => {
+    try {
+      if (profileReducer?.profile) {
+        setIsLoading(true);
+        // console.log('Profile Overview mounted with profile:', profileReducer.profile);
+        const profileInfo = profileReducer.profile; // Assuming it's a JSON string
+        setFullName(profileInfo?.fullName || '');
+        setHeadline(profileInfo?.headline || '');
+        setProfileImage(profileInfo?.profileImage || '');
+        setBannerImage(profileInfo?.bannerImage || '');
+        setIsLoading(false);
+      }
+    } catch (error) {
+       setIsLoading(false);
+      console.error('Failed to parse profile:', error);
+    }
+  }, [profileReducer.profile]); // 👈 use profile as a dependency
 
   const handleProfileImageChange = (e) => {
     const file = e.target.files[0];
@@ -64,6 +71,7 @@ const ProfileOverview = () => {
     if (isEditing) {
       // Save changes
       try {
+        setIsLoading(true);
         await axios.put('/api/profile', { fullName, headline, id:userId});
 
         if (profileImageFile || bannerImageFile) {
@@ -82,7 +90,16 @@ const ProfileOverview = () => {
           setBannerImage(uploadRes.data.bannerImage);
           setProfileImageFile(null);
           setBannerImageFile(null);
+          
         }
+
+        axios.get('/api/profile?id='+userId)
+      .then(res => {
+        dispatch(setField({ name: 'profile', value: res.data }));
+        setIsLoading(false);
+      })
+      .catch(err => console.error('Error fetching profile', err));
+
       } catch (error) {
         console.error('Failed to save profile', error);
       }
@@ -92,8 +109,10 @@ const ProfileOverview = () => {
 
   return (
     <Card sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
+      
       {/* Banner Image */}
       <Box sx={{ position: 'relative', height: 200, backgroundColor: '#e0e0e0' }}>
+         <LoadingOverlay isLoading={isLoading} />
         {bannerImage ? (
           <CardMedia
             component="img"

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {  useEffect } from 'react';
 import ProfileOverview from '../components/Profile/ProfileOverview';
 import AboutSection from '../components/Profile/AboutSection';
 import ExperienceSection from '../components/Profile/ExperienceSection';
@@ -10,8 +10,20 @@ import { Box } from '@mui/material';
 import TopNav from '../components/Layout/TopNav';
 import LeftSidebar from '../components/Layout/LeftSidebar';
 import RightSidebar from '../components/Layout/RightSidebar';
-
+import { setField } from '../reducers/profileReducer';
+import axios from '../api/axios';
+import { useDispatch } from 'react-redux';
 const ProfilePage = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+     axios.get('/api/profile?id='+localStorage.getItem('userId'))
+      .then(res => {
+        dispatch(setField({ name: 'profile', value: res.data }));
+      })
+      .catch(err => console.error('Error fetching profile', err));
+  }, []);
+
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
       <TopNav />
