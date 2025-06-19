@@ -30,7 +30,7 @@ const AboutSection = () => {
         setIsLoading(true);
         const profileInfo = profileReducer?.profile;
         console.log('AboutSection mounted with profile:', profileInfo);
-        setAboutText(profileInfo?.about.Description || '');
+        setAboutText(profileInfo?.about?.Description || '');
         setIsLoading(false);
       }
     } catch (err) {
