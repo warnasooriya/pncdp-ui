@@ -24,6 +24,7 @@ import AddIcon from "@mui/icons-material/Add";
 import axios from "../../api/axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setField } from "../../reducers/profileReducer";
+import LoadingOverlay from "../common/LoadingOverlay";
 
 const ExperienceSection = () => {
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ const ExperienceSection = () => {
   const [experienceList, setExperienceList] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [isPresent, setIsPresent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentExperience, setCurrentExperience] = useState({
     Title: "",
     Company: "",
@@ -53,11 +55,14 @@ const ExperienceSection = () => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     try {
       if (profileReducer?.profile?.experiences) {
         setExperienceList(profileReducer.profile.experiences);
+        setIsLoading(false);
       }
     } catch (err) {
+      setIsLoading(false);
       console.error("Error loading experience data:", err);
     }
   }, [profileReducer.profile]);
@@ -82,6 +87,7 @@ const ExperienceSection = () => {
   };
 
   const syncWithBackend = async (updatedList) => {
+    setIsLoading(true);
     try {
       await axios.put("/api/profile/experiences", {
         id: userId,
@@ -90,7 +96,9 @@ const ExperienceSection = () => {
 
       const res = await axios.get(`/api/profile?id=${userId}`);
       dispatch(setField({ name: "profile", value: res.data }));
+      setIsLoading(false);
     } catch (err) {
+      setIsLoading(false);
       console.error("Failed to update experiences:", err);
     }
   };
@@ -130,6 +138,7 @@ const ExperienceSection = () => {
 
   return (
     <Card sx={{ borderRadius: 3, mb: 3 }}>
+        <LoadingOverlay isLoading={isLoading} />
       <CardContent>
         <Stack
           direction="row"
@@ -152,6 +161,7 @@ const ExperienceSection = () => {
         </Stack>
 
         <Stack spacing={3}>
+          
           {experienceList.map((exp, index) => (
             <Box key={index}>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -199,8 +209,10 @@ const ExperienceSection = () => {
       </CardContent>
 
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
+        
         <DialogTitle>{editIndex !== null ? "Edit Experience" : "Add Experience"}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          <LoadingOverlay isLoading={isLoading} />
           <TextField
             label="Job Title *"
             value={currentExperience.Title}

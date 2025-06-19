@@ -1,49 +1,68 @@
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Stack, 
-  IconButton, 
-  Button, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
-  Divider, 
-  Box, 
-  Avatar 
-} from '@mui/material';
-import SchoolIcon from '@mui/icons-material/School';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Stack,
+  IconButton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Divider,
+  Box,
+  Avatar
+} from "@mui/material";
+import SchoolIcon from "@mui/icons-material/School";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import axios from "../../api/axios";
+import { useDispatch, useSelector } from "react-redux";
+import { setField } from "../../reducers/profileReducer";
+import LoadingOverlay from "../common/LoadingOverlay";
 
 const EducationSection = () => {
-  const [educationList, setEducationList] = useState([
-    {
-      degree: 'BSc in Computer Science',
-      university: 'Stanford University',
-      duration: '2015 - 2019',
-      description: 'Focused on Software Engineering, AI, and Data Structures.',
-      logo: 'https://static.sliit.lk/wp-content/uploads/2017/12/sliit-web-logo.png'
-    },
-    {
-      degree: 'MSc in Data Science',
-      university: 'Massachusetts Institute of Technology',
-      duration: '2019 - 2021',
-      description: 'Specialized in Machine Learning and Big Data Analytics.',
-      logo: 'https://lh4.googleusercontent.com/lQAv6eGKCBVJXbAphQzeEvXZbCfOA5_ANt_edK_LXyWInVHlfL9iNbzGEfHp3L4lQ6iVhVvsOcCn7yfk8b5uI6k=w16383'
-    }
-  ]);
+  const dispatch = useDispatch();
+  const profileReducer = useSelector((state) => state.profileReducer);
+  const [userId] = useState(localStorage.getItem("userId"));
 
+  const [educationList, setEducationList] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [currentEducation, setCurrentEducation] = useState({ degree: '', university: '', duration: '', description: '', logo: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentEducation, setCurrentEducation] = useState({
+    degree: "",
+    university: "",
+    duration: "",
+    description: "",
+    logo: ""
+  });
   const [editIndex, setEditIndex] = useState(null);
 
+  // Load education from Redux on mount
+  useEffect(() => {
+    setIsLoading(true);
+    try {
+      if (profileReducer?.profile?.educations) {
+        setEducationList(profileReducer.profile.educations);
+        setIsLoading(false);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.error("Error loading education data:", err);
+    }
+  }, [profileReducer.profile]);
+
   const handleOpenDialog = () => {
-    setCurrentEducation({ degree: '', university: '', duration: '', description: '', logo: '' });
+    setCurrentEducation({
+      degree: "",
+      university: "",
+      duration: "",
+      description: "",
+      logo: ""
+    });
     setEditIndex(null);
     setOpenDialog(true);
   };
@@ -52,14 +71,34 @@ const EducationSection = () => {
     setOpenDialog(false);
   };
 
-  const handleSaveEducation = () => {
-    if (editIndex !== null) {
-      const updated = [...educationList];
-      updated[editIndex] = currentEducation;
-      setEducationList(updated);
-    } else {
-      setEducationList([...educationList, currentEducation]);
+  const syncWithBackend = async (updatedList) => {
+    setIsLoading(true);
+    try {
+      await axios.put("/api/profile/education", {
+        id: userId,
+        educations: updatedList
+      });
+
+      const res = await axios.get(`/api/profile?id=${userId}`);
+      dispatch(setField({ name: "profile", value: res.data }));
+      setIsLoading(false);
+    } catch (err) {
+      setIsLoading(false);
+      console.error("Failed to update education:", err);
     }
+  };
+
+  const handleSaveEducation = async () => {
+    let updated;
+    if (editIndex !== null) {
+      updated = [...educationList];
+      updated[editIndex] = currentEducation;
+    } else {
+      updated = [...educationList, currentEducation];
+    }
+
+    setEducationList(updated);
+    await syncWithBackend(updated);
     setOpenDialog(false);
   };
 
@@ -69,24 +108,26 @@ const EducationSection = () => {
     setOpenDialog(true);
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = async (index) => {
     const updated = educationList.filter((_, i) => i !== index);
     setEducationList(updated);
+    await syncWithBackend(updated);
   };
 
   return (
     <Card sx={{ borderRadius: 3, mb: 3 }}>
       <CardContent>
+        <LoadingOverlay isLoading={isLoading} />
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6" fontWeight="bold">
             Education
           </Typography>
-          <Button 
-            variant="outlined" 
-            startIcon={<AddIcon />} 
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
             onClick={handleOpenDialog}
             size="small"
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             Add
           </Button>
@@ -96,10 +137,10 @@ const EducationSection = () => {
           {educationList.map((edu, index) => (
             <Box key={index}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar 
-                  src={edu.logo || ''} 
-                  alt="University Logo" 
-                  sx={{ bgcolor: '#e0e0e0', width: 56, height: 56 }}
+                <Avatar
+                  src={edu.logo || ""}
+                  alt="University Logo"
+                  sx={{ bgcolor: "#e0e0e0", width: 56, height: 56 }}
                 >
                   <SchoolIcon />
                 </Avatar>
@@ -132,29 +173,38 @@ const EducationSection = () => {
       {/* Dialog for Add/Edit */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
         <DialogTitle>{editIndex !== null ? "Edit Education" : "Add Education"}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          <LoadingOverlay isLoading={isLoading} />
           <TextField
             label="Degree or Qualification"
             value={currentEducation.degree}
-            onChange={(e) => setCurrentEducation({ ...currentEducation, degree: e.target.value })}
+            onChange={(e) =>
+              setCurrentEducation({ ...currentEducation, degree: e.target.value })
+            }
             fullWidth
           />
           <TextField
             label="University / Institute"
             value={currentEducation.university}
-            onChange={(e) => setCurrentEducation({ ...currentEducation, university: e.target.value })}
+            onChange={(e) =>
+              setCurrentEducation({ ...currentEducation, university: e.target.value })
+            }
             fullWidth
           />
           <TextField
             label="Duration (e.g., 2015 - 2019)"
             value={currentEducation.duration}
-            onChange={(e) => setCurrentEducation({ ...currentEducation, duration: e.target.value })}
+            onChange={(e) =>
+              setCurrentEducation({ ...currentEducation, duration: e.target.value })
+            }
             fullWidth
           />
           <TextField
             label="Description (optional)"
             value={currentEducation.description}
-            onChange={(e) => setCurrentEducation({ ...currentEducation, description: e.target.value })}
+            onChange={(e) =>
+              setCurrentEducation({ ...currentEducation, description: e.target.value })
+            }
             fullWidth
             multiline
             minRows={3}
@@ -162,7 +212,9 @@ const EducationSection = () => {
           <TextField
             label="University Logo URL (optional)"
             value={currentEducation.logo}
-            onChange={(e) => setCurrentEducation({ ...currentEducation, logo: e.target.value })}
+            onChange={(e) =>
+              setCurrentEducation({ ...currentEducation, logo: e.target.value })
+            }
             fullWidth
           />
         </DialogContent>

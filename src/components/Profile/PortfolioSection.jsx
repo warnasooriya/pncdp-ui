@@ -1,40 +1,52 @@
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Stack, 
-  IconButton, 
-  Button, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
-  Divider, 
-  Box, 
-  Link 
+import React, { useEffect, useState } from 'react';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Stack,
+  IconButton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Divider,
+  Box,
+  Link
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import { useDispatch, useSelector } from 'react-redux';
+import { setField } from '../../reducers/profileReducer';
+import axios from '../../api/axios';
+import LoadingOverlay from '../common/LoadingOverlay';
 
 const PortfolioSection = () => {
-  const [portfolioLinks, setPortfolioLinks] = useState([
-    {
-      title: 'Personal Website',
-      url: 'https://johnsportfolio.com'
-    },
-    {
-      title: 'GitHub Repository',
-      url: 'https://github.com/johndoe'
-    }
-  ]);
+  const dispatch = useDispatch();
+  const profileReducer = useSelector((state) => state.profileReducer);
+  const [userId] = useState(localStorage.getItem('userId'));
 
+  const [portfolioLinks, setPortfolioLinks] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentLink, setCurrentLink] = useState({ title: '', url: '' });
   const [editIndex, setEditIndex] = useState(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+    try {
+      if (profileReducer?.profile?.portfolio) {
+        setPortfolioLinks(profileReducer.profile.portfolio);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Failed to load portfolio:', error);
+      setIsLoading(false);
+    }
+  }, [profileReducer.profile]);
 
   const handleOpenDialog = () => {
     setCurrentLink({ title: '', url: '' });
@@ -42,18 +54,36 @@ const PortfolioSection = () => {
     setOpenDialog(true);
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
+  const handleCloseDialog = () => setOpenDialog(false);
+
+  const syncWithBackend = async (updatedList) => {
+    setIsLoading(true);
+    try {
+      await axios.put('/api/profile/portfolio', {
+        id: userId,
+        portfolio: updatedList
+      });
+
+      const res = await axios.get(`/api/profile?id=${userId}`);
+      dispatch(setField({ name: 'profile', value: res.data }));
+    } catch (err) {
+      console.error('Failed to sync portfolio:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSaveLink = () => {
+  const handleSaveLink = async () => {
+    let updated;
     if (editIndex !== null) {
-      const updated = [...portfolioLinks];
+      updated = [...portfolioLinks];
       updated[editIndex] = currentLink;
-      setPortfolioLinks(updated);
     } else {
-      setPortfolioLinks([...portfolioLinks, currentLink]);
+      updated = [...portfolioLinks, currentLink];
     }
+
+    setPortfolioLinks(updated);
+    await syncWithBackend(updated);
     setOpenDialog(false);
   };
 
@@ -63,21 +93,23 @@ const PortfolioSection = () => {
     setOpenDialog(true);
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = async (index) => {
     const updated = portfolioLinks.filter((_, i) => i !== index);
     setPortfolioLinks(updated);
+    await syncWithBackend(updated);
   };
 
   return (
     <Card sx={{ borderRadius: 3, mb: 3 }}>
       <CardContent>
+        <LoadingOverlay isLoading={isLoading} />
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6" fontWeight="bold">
             Portfolio
           </Typography>
-          <Button 
-            variant="outlined" 
-            startIcon={<AddIcon />} 
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
             onClick={handleOpenDialog}
             size="small"
             sx={{ textTransform: 'none' }}
@@ -116,7 +148,7 @@ const PortfolioSection = () => {
 
       {/* Dialog for Add/Edit */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-        <DialogTitle>{editIndex !== null ? "Edit Portfolio Link" : "Add Portfolio Link"}</DialogTitle>
+        <DialogTitle>{editIndex !== null ? 'Edit Portfolio Link' : 'Add Portfolio Link'}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
           <TextField
             label="Title (e.g., Personal Website, GitHub)"
@@ -134,7 +166,7 @@ const PortfolioSection = () => {
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button variant="contained" onClick={handleSaveLink}>
-            {editIndex !== null ? "Update" : "Save"}
+            {editIndex !== null ? 'Update' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
