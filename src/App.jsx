@@ -13,9 +13,6 @@ import JobCreateForm from './components/Organization/JobCreateForm';
 
 function App() {
 
-  localStorage.setItem('userId',  
-    '6852d7ce3099ab2be9db498e');
-
   return (
     <Routes>
       {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}

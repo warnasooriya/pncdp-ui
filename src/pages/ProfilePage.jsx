@@ -11,8 +11,8 @@ import TopNav from '../components/Layout/TopNav';
 import LeftSidebar from '../components/Layout/LeftSidebar';
 import RightSidebar from '../components/Layout/RightSidebar';
 import { setField } from '../reducers/profileReducer';
-import axios from '../api/axios';
 import { useDispatch } from 'react-redux';
+import axios from '../api/axios';
 const ProfilePage = () => {
   const dispatch = useDispatch();
 

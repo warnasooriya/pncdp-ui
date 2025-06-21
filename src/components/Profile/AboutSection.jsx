@@ -43,11 +43,11 @@ const AboutSection = () => {
     try {
       await axios.put('/api/profile/about', {
         description: aboutText,
-        id: profileReducer.profile._id
+        id: localStorage.getItem('userId')
       });
 
       // Refresh Redux store
-      const res = await axios.get('/api/profile?id='+profileReducer.profile._id);
+      const res = await axios.get('/api/profile?id='+localStorage.getItem('userId'));
       dispatch(setField({ name: 'profile', value: res.data }));
       setIsLoading(false);
     } catch (err) {

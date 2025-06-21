@@ -9,8 +9,10 @@ import MessageIcon from '@mui/icons-material/Message';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AdsClickIcon from '@mui/icons-material/AdsClick';
 import { Link as RouterLink } from 'react-router-dom'; // Assuming you're using react-router
+import { useAuthenticator } from "@aws-amplify/ui-react";
 
 const TopNav = () => {
+    const { signOut, user } = useAuthenticator(); 
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleAvatarClick = (event) => {
@@ -20,6 +22,15 @@ const TopNav = () => {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  const handleLogout = () => {
+    // Handle logout logic here
+    signOut();
+    localStorage.clear();
+    console.log('Logout clicked');
+    setAnchorEl(null);
+
+  }
 
   return (
     <AppBar position="sticky" sx={{ backgroundColor: '#fff', boxShadow: 1 }}>
@@ -137,7 +148,7 @@ const TopNav = () => {
           >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
         </Box>
 

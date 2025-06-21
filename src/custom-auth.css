@@ -1,0 +1,334 @@
+/* Root wrapper for authentication layout */
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 3rem;
+  padding: 4rem 2rem;
+  background: linear-gradient(to bottom right, #f8fafc, #e0f2fe);
+  min-height: 100vh;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Individual auth card (Sign In / Sign Up) */
+.auth-card {
+  background-color: #ffffff;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  flex: 1 1 360px;
+  max-width: 420px;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Headings inside cards */
+.auth-card h2 {
+  text-align: center;
+  color: #1f2937;
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+/* Tabs container */
+.amplify-tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Tab buttons */
+.amplify-tabs__list {
+  display: flex;
+  justify-content: center;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+}
+
+.amplify-tabs__item {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.amplify-tabs__item:hover {
+  color: #2563eb;
+}
+
+.amplify-tabs__item--active {
+  color: #2563eb;
+  border-bottom: 3px solid #2563eb;
+  font-weight: 600;
+}
+
+/* Active tab content */
+.amplify-tabs__panel {
+  width: 650px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  /* box-shadow: 0 4px 10px rgba(23, 23, 23, 0.05); */
+  /* box-sizing: border-box; */
+  margin-bottom: 1.5rem;
+  /* align-items: center; */
+  /* animation: fadeIn 0.3s ease-in-out; */
+}
+
+/* Buttons inside forms */
+.amplify-button {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 500;
+  border-radius: 8px !important;
+  padding: 0.75rem;
+  font-size: 1rem;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.amplify-button:hover {
+  background-color: #2563eb !important;
+}
+
+/* Input fields */
+.amplify-textfield__control,
+.amplify-input {
+  border-radius: 8px !important;
+  border: 1px solid #d1d5db !important;
+  padding: 0.75rem !important;
+  font-size: 1rem !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.amplify-textfield__control:focus,
+.amplify-input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+  outline: none;
+}
+
+/* Labels */
+.amplify-label {
+  font-size: 0.95rem;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+/* Link buttons like 'Forgot Password' */
+.amplify-button--link {
+  color: #2563eb !important;
+  font-size: 0.9rem !important;
+  text-align: center;
+  margin-top: 1rem;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.amplify-button--link:hover {
+  text-decoration: underline;
+}
+
+/* Error messages */
+.amplify-field__error-message {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .auth-wrapper {
+    flex-direction: column;
+    padding: 2rem 1rem;
+  }
+
+  .auth-card {
+    max-width: 100%;
+  }
+
+  .amplify-tabs__item {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Password visibility: hide default button container */
+.amplify-field-group__outer-end {
+  display: none;
+}
+
+/* Password field inline layout */
+.amplify-passwordfield .amplify-field-group--horizontal {
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+/* Input inside password group */
+.amplify-passwordfield .amplify-field-group__control[type="password"],
+.amplify-passwordfield .amplify-field-group__control[type="text"] {
+  border: none;
+  border-radius: 0;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.amplify-passwordfield .amplify-field-group__control:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+
+
+.amplify-passwordfield .amplify-field__show-password:hover {
+  color: #2563eb;
+}
+
+/* Visually hidden text */
+.amplify-visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* Margin fix between fields */
+.amplify-flex {
+  margin-bottom: 10px;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* gap: 10px; */
+ 
+  max-width: 450px;
+  margin: 0 auto;
+ 
+}
+
+
+/* 2-column wrapper */
+.auth-2col-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f8fafc, #e0f2fe);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Left side with image */
+.auth-left {
+  flex: 1;
+  background: #fff;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset -1px 0 0 #e5e7eb;
+}
+
+.auth-image {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 2rem;
+}
+
+.welcome-text {
+  font-size: 2rem;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.welcome-subtext {
+  font-size: 1rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Right side with Authenticator */
+.auth-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.amplify-button--small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+ 
+}
+.amplify-button--small:hover {
+  background-color: transparent !important;
+  cursor: pointer;
+  /* color: white !important; */
+}
+
+/* Responsive - single column for small screens */
+@media (max-width: 768px) {
+  .auth-2col-wrapper {
+    flex-direction: column;
+  }
+
+  .auth-left {
+    box-shadow: none;
+    padding: 2rem;
+  }
+
+  .auth-right {
+    padding: 1rem;
+  }
+}
+
+
+.amplify-alert--error .amplify-icon   {
+  /* background-color: #f43f5e !important; */
+  color: #f43f5e !important;
+}
+
+.amplify-alert__body{
+  color: #f43f5e !important;
+  font-size: 0.875rem;
+  line-height: 0.05rem;
+  font-weight: 500;
+  margin-left: 2rem; 
+  margin-top: -14px;
+}
+
+
+
+.amplify-button__loader-wrapper{
+display: none !important;
+}
+ 

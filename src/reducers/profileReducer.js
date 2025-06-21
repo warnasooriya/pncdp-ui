@@ -3,6 +3,8 @@ import { createSlice } from '@reduxjs/toolkit'
 const profileReducer = createSlice({
     name: 'profileReducer',
     initialState: {
+        userId:'',
+        signInDetails: {},
         profile: {},
         experiences: [],
     },
