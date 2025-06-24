@@ -1,23 +1,24 @@
-import React, {  useEffect } from 'react';
+import React, {  useEffect,useRef  } from 'react';
 import { setField } from './reducers/profileReducer';
 import { useDispatch } from 'react-redux';
 import axios from './api/axios';
+import { fetchAuthSession , } from "@aws-amplify/auth";
+import {jwtDecode} from 'jwt-decode';
 
-export default function UserSyncronizer({ user }) {
+export default function UserSyncronizer() {
   const dispatch = useDispatch();
- 
+  const hasFetched = useRef(false);
   const sycUserWithBackend = async (user) => {
-
-    if (!user || !user.userId) {
-            console.error('Invalid user data:', user);
+    console.log('Syncing user with backend:', user);
+    if (!user || !user.sub || !user.email) {
+            console.error('User data is incomplete:', user);
             return;
         }
-
            axios.put('/api/users',user)
       .then(res => {
-        dispatch(setField({ name: 'userId', value: user.userId }));
-      dispatch(setField({ name: 'signInDetails', value: user.signInDetails })); // Assuming user attributes contain profile info
-      localStorage.setItem('userId', user.userId); // Store userId in localStorage
+        dispatch(setField({ name: 'userId', value: user.sub }));
+      dispatch(setField({ name: 'email', value: user.email })); // Assuming user attributes contain profile info
+      localStorage.setItem('userId', user.sub); // Store userId in localStorage
 
       console.log('User data synced successfully:', res.data);
       })
@@ -26,14 +27,26 @@ export default function UserSyncronizer({ user }) {
     
   };
 
-  useEffect(() => {
-    if (user) {
-      // Dispatch actions to update the Redux store with user data
-      sycUserWithBackend(user); // Sync user data with backend
-     
-     
-    }
-  }, [user, dispatch]);
+  const fetchUserDetails = async () => {
+      try {
+         const user =  await fetchAuthSession();
+        const idToken = user.tokens.idToken.toString();
+        console.log('idToken', idToken);
+        const decodedToken = jwtDecode(idToken);
+        console.log('Decoded Token:', decodedToken);
+        await sycUserWithBackend(decodedToken); // Sync user data with backend
+      } catch (err) {
+        console.error('Error fetching user attributes', err);
+      }
+    };
 
-  return null; // This component does not render anything
+  useEffect(() => {
+    if (!hasFetched.current) {
+      // Fetch user details from AWS Amplify Auth
+       hasFetched.current = true; // ✅ run only once
+      fetchUserDetails();
+ 
+     }
+  }, []);
+
 }

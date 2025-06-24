@@ -1,4 +1,4 @@
-import { Authenticator } from "@aws-amplify/ui-react";
+import { Authenticator, Button } from "@aws-amplify/ui-react";
 import './custom-auth.css'; // Custom styling
 import WelcomeImage from './assets/welcome-image.png';
 import { BrowserRouter } from "react-router-dom";
@@ -13,13 +13,15 @@ import UserSyncronizer from "./UserSyncronizer";
 export default function CustomAuthLayout() {
   return (
     <Provider store={Store}>
-      <Authenticator
+      <Authenticator socialProviders={['google']} // <- This enables the Google button
         initialState="signIn"
         
       >
+ 
         {({ signOut, user }) => (
           <>
-         
+          {/* <pre>{JSON.stringify(user, null, 2)}</pre> */}
+
           <UserSyncronizer user={user} />
           <BrowserRouter>
 

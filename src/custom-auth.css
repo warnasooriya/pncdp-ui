@@ -332,3 +332,63 @@
 display: none !important;
 }
  
+ * Container for the federated sign-in */
+.federated-sign-in-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+/* Google Sign-In Button Styling */
+.federated-sign-in-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  width: 100%;
+  /* max-width: 320px; */
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover effect */
+.federated-sign-in-button:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07);
+}
+
+/* Focus outline for accessibility */
+.federated-sign-in-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Google icon inside the button */
+.federated-sign-in-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Button label */
+.federated-sign-in-button .amplify-text {
+  font-size: 1rem;
+  color: inherit;
+}
+@media (max-width: 480px) {
+  .federated-sign-in-button {
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+  }
+}
