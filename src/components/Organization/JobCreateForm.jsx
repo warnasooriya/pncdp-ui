@@ -20,7 +20,7 @@ const JobCreateForm = () => {
     description: '',
     deadline: '',
   });
-  const [banner, setBanner] = useState(null);
+  
   const [bannerPreview, setBannerPreview] = useState(null);
 
   const [submitStatus, setSubmitStatus] = useState({ loading: false, error: '', success: '' });
@@ -42,7 +42,7 @@ const JobCreateForm = () => {
       });
 
       // console.log('Banner generation response:', response.data);
-      setBannerPreview(response.data.imageUrl);
+      setBannerPreview(response.data.originalUrl);
       setFormData((prev) => ({ ...prev, banner: response.data.imagePath }));
       
       setSubmitStatus({ loading: false, error: '', success: 'Banner generated successfully!' });
@@ -75,7 +75,7 @@ const JobCreateForm = () => {
         description: '',
         deadline: '',
       });
-      setBanner(null);
+      
       setBannerPreview(null);
     } catch (err) {
       setSubmitStatus({
