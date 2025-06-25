@@ -87,7 +87,7 @@ const JobItems = () => {
                   cursor: "pointer",
                 },
               }}
-              onClick={() => handleJobClick(job.id)}
+              onClick={() => handleJobClick(job._id)}
             >
               <Box
                 sx={{

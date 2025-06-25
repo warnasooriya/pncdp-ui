@@ -19,10 +19,11 @@ const JobCreateForm = () => {
     type: '',
     description: '',
     deadline: '',
+    requirements: [],
   });
   
   const [bannerPreview, setBannerPreview] = useState(null);
-
+const [newRequirement, setNewRequirement] = useState('');
   const [submitStatus, setSubmitStatus] = useState({ loading: false, error: '', success: '' });
 
   const jobTypes = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'];
@@ -74,6 +75,7 @@ const JobCreateForm = () => {
         type: '',
         description: '',
         deadline: '',
+        requirements: []
       });
       
       setBannerPreview(null);
@@ -139,6 +141,66 @@ const JobCreateForm = () => {
             </TextField>
 
            
+           <Box>
+  <Typography variant="subtitle1" sx={{ mt: 2 }}>
+     Requirements
+  </Typography>
+  <Stack direction="row" spacing={2} alignItems="center">
+    <TextField
+      label="Add Requirement"
+      value={newRequirement}
+      onChange={(e) => setNewRequirement(e.target.value)}
+      fullWidth
+    />
+    <Button
+      variant="contained"
+      onClick={() => {
+        if (newRequirement.trim()) {
+          setFormData((prev) => ({
+            ...prev,
+            requirements: [...prev.requirements, newRequirement.trim()],
+          }));
+          setNewRequirement('');
+        }
+      }}
+    >
+      Add
+    </Button>
+  </Stack>
+
+  {/* Display list of added requirements */}
+  <Stack spacing={1} sx={{ mt: 2 }}>
+    {formData.requirements.map((req, index) => (
+      <Box
+        key={index}
+        sx={{
+          px: 2,
+          py: 1,
+          backgroundColor: '#f3f4f6',
+          borderRadius: 1,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="body2">{req}</Typography>
+        <Button
+          variant="text"
+          size="small"
+          color="error"
+          onClick={() => {
+            setFormData((prev) => ({
+              ...prev,
+              requirements: prev.requirements.filter((_, i) => i !== index),
+            }));
+          }}
+        >
+          Remove
+        </Button>
+      </Box>
+    ))}
+  </Stack>
+</Box>
 
             <TextField
               label="Job Description"
