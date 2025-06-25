@@ -39,12 +39,12 @@ const SkillsSection = () => {
   const syncWithBackend = async (updatedList) => {
     setIsLoading(true);
     try {
-      await axios.put("/api/profile/skills", {
+      await axios.put("/api/candidate/profile/skills", {
         id: userId,
         skills: updatedList
       });
 
-      const res = await axios.get(`/api/profile?id=${userId}`);
+      const res = await axios.get(`/api/candidate/profile?id=${userId}`);
       dispatch(setField({ name: "profile", value: res.data }));
     } catch (err) {
       console.error("Failed to update skills:", err);

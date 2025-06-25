@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from '../../api/axios-recruiter';
 import {
   Box,
   TextField,
@@ -11,12 +12,18 @@ import {
 
 const JobCreateForm = () => {
   const [formData, setFormData] = useState({
+    userId: localStorage.getItem('userId'),
+    banner: '',
     title: '',
     location: '',
     type: '',
     description: '',
     deadline: '',
   });
+  const [banner, setBanner] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
+
+  const [submitStatus, setSubmitStatus] = useState({ loading: false, error: '', success: '' });
 
   const jobTypes = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Remote'];
 
@@ -25,10 +32,58 @@ const JobCreateForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const generateBanner = async () => {
+    setSubmitStatus({ loading: true, error: '', success: '' });
+    try {
+      // Replace with your actual banner generation logic
+      const response = await axios.post('/api/recruiter/jobs/generate-banner', {
+        description: formData.description,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // console.log('Banner generation response:', response.data);
+      setBannerPreview(response.data.imageUrl);
+      setFormData((prev) => ({ ...prev, banner: response.data.imagePath }));
+      
+      setSubmitStatus({ loading: false, error: '', success: 'Banner generated successfully!' });
+    } catch (err) {
+      setSubmitStatus({ loading: false, error: 'Failed to generate banner.', success: '' });
+      console.error('Error generating banner:', err);
+    }
+  };
+
+ 
+ 
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Job Created:', formData);
-    // TODO: Send formData to backend API here
+    setSubmitStatus({ loading: true, error: '', success: '' });
+ 
+    try {
+      // Replace the URL with your actual backend endpoint
+      await axios.post('/api/recruiter/jobs', formData, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      setSubmitStatus({ loading: false, error: '', success: 'Job created successfully!' });
+      // Optionally reset form
+      setFormData({
+        userId: localStorage.getItem('userId'),
+        banner: '',
+        title: '',
+        location: '',
+        type: '',
+        description: '',
+        deadline: '',
+      });
+      setBanner(null);
+      setBannerPreview(null);
+    } catch (err) {
+      setSubmitStatus({
+        loading: false,
+        error: err.response?.data?.message || 'Failed to create job.',
+        success: ''
+      });
+    }
   };
 
   return (
@@ -37,10 +92,20 @@ const JobCreateForm = () => {
         <Typography variant="h5" gutterBottom>
           Create a New Job Post
         </Typography>
-
-        <form onSubmit={handleSubmit}>
+        {/* Show success or error messages */}
+        {submitStatus.success && (
+          <Typography color="success.main" sx={{ mb: 2 }}>
+            {submitStatus.success}
+          </Typography>
+        )}
+        {submitStatus.error && (
+          <Typography color="error.main" sx={{ mb: 2 }}>
+            {submitStatus.error}
+          </Typography>
+        )}
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <Stack spacing={3}>
-
+            
             <TextField
               label="Job Title"
               name="title"
@@ -73,6 +138,8 @@ const JobCreateForm = () => {
               ))}
             </TextField>
 
+           
+
             <TextField
               label="Job Description"
               name="description"
@@ -83,6 +150,33 @@ const JobCreateForm = () => {
               minRows={4}
               required
             />
+
+            <Button
+              variant="outlined"
+              component="label"
+              sx={{ mb: 2 }}
+              disabled={submitStatus.loading}
+              onClick={generateBanner}
+            >
+              Generate Banner</Button>
+
+ {/* Banner Upload Section */}
+            <Box>
+              <Typography variant="subtitle1" gutterBottom>
+                Banner Image
+              </Typography>
+              
+            
+              {bannerPreview && (
+                <Box sx={{ mt: 1 }}>
+                  <img
+                    src={bannerPreview}
+                    alt="Banner Preview"
+                    style={{ maxWidth: '100%',  borderRadius: 8 }}
+                  />
+                </Box>
+              )}
+            </Box>
 
             <TextField
               label="Application Deadline"
@@ -95,8 +189,13 @@ const JobCreateForm = () => {
               required
             />
 
-            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-              Post Job
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{ mt: 2 }}
+              disabled={submitStatus.loading}
+            >
+              {submitStatus.loading ? 'Posting...' : 'Post Job'}
             </Button>
           </Stack>
         </form>

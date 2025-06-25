@@ -41,13 +41,13 @@ const AboutSection = () => {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      await axios.put('/api/profile/about', {
+      await axios.put('/api/candidate/profile/about', {
         description: aboutText,
         id: localStorage.getItem('userId')
       });
 
       // Refresh Redux store
-      const res = await axios.get('/api/profile?id='+localStorage.getItem('userId'));
+      const res = await axios.get('/api/candidate/profile?id='+localStorage.getItem('userId'));
       dispatch(setField({ name: 'profile', value: res.data }));
       setIsLoading(false);
     } catch (err) {

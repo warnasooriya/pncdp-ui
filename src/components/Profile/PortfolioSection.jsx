@@ -59,12 +59,12 @@ const PortfolioSection = () => {
   const syncWithBackend = async (updatedList) => {
     setIsLoading(true);
     try {
-      await axios.put('/api/profile/portfolio', {
+      await axios.put('/api/candidate/profile/portfolio', {
         id: userId,
         portfolio: updatedList
       });
 
-      const res = await axios.get(`/api/profile?id=${userId}`);
+      const res = await axios.get(`/api/candidate/profile?id=${userId}`);
       dispatch(setField({ name: 'profile', value: res.data }));
     } catch (err) {
       console.error('Failed to sync portfolio:', err);

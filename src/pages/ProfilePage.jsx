@@ -17,7 +17,7 @@ const ProfilePage = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-     axios.get('/api/profile?id='+localStorage.getItem('userId'))
+     axios.get('/api/candidate/profile?id='+localStorage.getItem('userId'))
       .then(res => {
         dispatch(setField({ name: 'profile', value: res.data }));
       })

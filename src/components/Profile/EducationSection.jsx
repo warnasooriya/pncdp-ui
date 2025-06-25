@@ -74,12 +74,12 @@ const EducationSection = () => {
   const syncWithBackend = async (updatedList) => {
     setIsLoading(true);
     try {
-      await axios.put("/api/profile/education", {
+      await axios.put("/api/candidate/profile/education", {
         id: userId,
         educations: updatedList
       });
 
-      const res = await axios.get(`/api/profile?id=${userId}`);
+      const res = await axios.get(`/api/candidate/profile?id=${userId}`);
       dispatch(setField({ name: "profile", value: res.data }));
       setIsLoading(false);
     } catch (err) {

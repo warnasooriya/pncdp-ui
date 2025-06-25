@@ -72,7 +72,7 @@ const ProfileOverview = () => {
       // Save changes
       try {
         setIsLoading(true);
-        await axios.put('/api/profile', { fullName, headline, id:userId});
+        await axios.put('/api/candidate/profile', { fullName, headline, id:userId});
 
         if (profileImageFile || bannerImageFile) {
           const formData = new FormData();
@@ -81,7 +81,7 @@ const ProfileOverview = () => {
           if (bannerImageFile) formData.append('bannerImage', bannerImageFile);
           
           formData.append('id', userId); // Assuming userId is stored in localStorage
-          const uploadRes = await axios.post('/api/profile/upload', formData, {
+          const uploadRes = await axios.post('/api/candidate/profile/upload', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
 
@@ -93,7 +93,7 @@ const ProfileOverview = () => {
           
         }
 
-        axios.get('/api/profile?id='+userId)
+        axios.get('/api/candidate/profile?id='+userId)
       .then(res => {
         dispatch(setField({ name: 'profile', value: res.data }));
         setIsLoading(false);

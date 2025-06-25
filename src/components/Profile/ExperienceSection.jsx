@@ -89,12 +89,12 @@ const ExperienceSection = () => {
   const syncWithBackend = async (updatedList) => {
     setIsLoading(true);
     try {
-      await axios.put("/api/profile/experiences", {
+      await axios.put("/api/candidate/profile/experiences", {
         id: userId,
         experiences: updatedList,
       });
 
-      const res = await axios.get(`/api/profile?id=${userId}`);
+      const res = await axios.get(`/api/candidate/profile?id=${userId}`);
       dispatch(setField({ name: "profile", value: res.data }));
       setIsLoading(false);
     } catch (err) {
