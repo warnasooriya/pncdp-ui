@@ -9,8 +9,11 @@ import {
   Paper,
   Stack
 } from '@mui/material';
-
+import TopNav from '../Layout/TopNav';
+import { useNavigate } from "react-router-dom";
+import LoadingOverlay from '../common/LoadingOverlay';
 const JobCreateForm = () => {
+    const navigate = useNavigate();
   const [formData, setFormData] = useState({
     userId: localStorage.getItem('userId'),
     banner: '',
@@ -79,6 +82,12 @@ const [newRequirement, setNewRequirement] = useState('');
       });
       
       setBannerPreview(null);
+
+      // wait for 2 seconds before redirecting
+      setTimeout(() => {
+        navigate('/jobs');
+      }, 2000);
+
     } catch (err) {
       setSubmitStatus({
         loading: false,
@@ -89,11 +98,16 @@ const [newRequirement, setNewRequirement] = useState('');
   };
 
   return (
+    <>
+  
+    <TopNav />
+    
     <Box sx={{ maxWidth: 700, mx: 'auto', my: 4, px: 2 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
         <Typography variant="h5" gutterBottom>
           Create a New Job Post
         </Typography>
+        <LoadingOverlay isLoading={submitStatus.loading} />
         {/* Show success or error messages */}
         {submitStatus.success && (
           <Typography color="success.main" sx={{ mb: 2 }}>
@@ -263,6 +277,8 @@ const [newRequirement, setNewRequirement] = useState('');
         </form>
       </Paper>
     </Box>
+    
+      </>
   );
 };
 

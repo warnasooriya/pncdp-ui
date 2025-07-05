@@ -7,6 +7,7 @@ const profileReducer = createSlice({
         signInDetails: {},
         profile: {},
         experiences: [],
+        userType: '',
     },
     reducers: {
         setField(state, action) {

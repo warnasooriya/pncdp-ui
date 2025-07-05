@@ -1,23 +1,47 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Box, InputBase, IconButton, Avatar, Badge, Menu, MenuItem, Stack } from '@mui/material';
+import React, { use, useState ,useEffect,useMemo} from 'react';
+import { AppBar, Toolbar, Typography, Box, InputBase, IconButton, Avatar, Badge, Menu, MenuItem, Stack, ListItemIcon } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import HomeIcon from '@mui/icons-material/Home';
 import GroupIcon from '@mui/icons-material/Group';
 import WorkIcon from '@mui/icons-material/Work';
 import MessageIcon from '@mui/icons-material/Message';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import AdsClickIcon from '@mui/icons-material/AdsClick';
+
 import { Link as RouterLink } from 'react-router-dom'; // Assuming you're using react-router
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import { useSelector } from 'react-redux';
 
 const TopNav = () => {
     const { signOut, user } = useAuthenticator(); 
   const [anchorEl, setAnchorEl] = useState(null);
 
+  
+  const profile = useSelector(state => state.profileReducer.profile);
+  const userType = useSelector(state => state.profileReducer.userType);
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+  const topMenuLinks = useMemo(() => {
+  const baseLinks  =[
+    { icon: HomeIcon, label: 'Home', link: '/' },
+    { icon: GroupIcon, label: 'Network' , link: '/mynetwork'},
+    { icon: WorkIcon, label: 'Jobs' , link: '/jobs'},
+ 
+  ];
+ 
+    if (userType === 'Recruiter') {
+      baseLinks.push({ icon: AutoFixHighIcon , label: 'Job Applications', link: '/applications' });
+    }
+
+     baseLinks.push({ icon: MessageIcon, label: 'Messaging', badge: 2 });
+      baseLinks.push({ icon: NotificationsIcon, label: 'Notifications', badge: 5 });
+
+    return baseLinks;
+  }, [userType]);
+
+ 
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -29,11 +53,12 @@ const TopNav = () => {
     localStorage.clear();
     console.log('Logout clicked');
     setAnchorEl(null);
-
+    window.location.href = '/';
   }
 
   return (
     <AppBar position="sticky" sx={{ backgroundColor: '#fff', boxShadow: 1 }}>
+          
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         
         {/* Left Side - Logo */}
@@ -64,14 +89,9 @@ const TopNav = () => {
 
         {/* Center - Icon Navigation */}
         <Stack direction="row" spacing={{ xs: 2, md: 4 }} alignItems="center" flexWrap="wrap">
-  {[
-    { icon: HomeIcon, label: 'Home', link: '/' },
-    { icon: GroupIcon, label: 'Network' , link: '/mynetwork'},
-    { icon: WorkIcon, label: 'Jobs' , link: '/jobs'},
-    { icon: MessageIcon, label: 'Messaging', badge: 2 },
-    { icon: NotificationsIcon, label: 'Notifications', badge: 5 },
-    { icon: AdsClickIcon, label: 'Ad' },
-  ].map(({ icon: Icon, label, badge, link }, index) => (
+
+     
+  {topMenuLinks.map(({ icon: Icon, label, badge, link }, index) => (
     <Box
       key={index}
       sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#5e5e5e', minWidth: 20 }}
@@ -133,10 +153,15 @@ const TopNav = () => {
         {/* Right Side - Profile */}
         <Box sx={{ display: 'flex', alignItems: 'center', ml: { xs: 0, md: 4 }, mt: { xs: 1, md: 0 } }}>
           <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold', color: '#000', fontSize: { xs: '0.8rem', md: '1rem' }, display: { xs: 'none', sm: 'block' } }}>
-            Folhnim
+            {profile?.fullName || 'User'}
           </Typography>
           <IconButton onClick={handleAvatarClick}>
-            <Avatar alt="Folhnim" src="https://randomuser.me/api/portraits/men/32.jpg" sx={{ width: 32, height: 32 }} />
+             <Avatar
+                          sx={{ width: 32, height: 32,}}
+                          src={profile?.profileImage || 'https://via.placeholder.com/80'}
+                          alt={profile?.fullName || 'User'}
+                        />
+             
           </IconButton>
           <Menu
             anchorEl={anchorEl}

@@ -23,6 +23,7 @@ const JobItems = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { jobs, loading } = useSelector((state) => state.jobsReducer);
+  const userType = localStorage.getItem("userType");
 
   const [search, setSearch] = useState("");
 
@@ -54,10 +55,33 @@ const JobItems = () => {
   return (
     <Box sx={{ width: "100%" }}>
       <LoadingOverlay isLoading={loading} />
-      <Typography variant="h5" fontWeight="bold" mb={2}>
-        <WorkOutlineIcon sx={{ mr: 1, verticalAlign: "middle" }} />
-        Find Your Next Opportunity
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Typography variant="h5" fontWeight="bold">
+          <WorkOutlineIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+          {userType === "candidate"
+            ? "Find Your Next Opportunity"
+            : "Posted Jobs"}
+        </Typography>
+            
+            {userType === "Recruiter" && (
+              <Button
+          variant="contained"
+          color="primary"
+          sx={{ textTransform: "none", borderRadius: 2 }}
+          onClick={() => navigate("/post-job")} // update with your route
+        >
+          Post a Job
+        </Button>
+            )}
+     
+ 
+       
+      </Box>
 
       <Box sx={{ backgroundColor: "#ffffff", p: 0, borderRadius: 2, mb: 2 }}>
         <TextField
@@ -73,7 +97,7 @@ const JobItems = () => {
 
       <Grid container spacing={4}>
         {filteredJobs.map((job) => (
-           <Grid item xs={12} sm={6} md={6} key={job.id}>
+          <Grid item xs={12} sm={6} md={6} key={job.id}>
             <Card
               variant="outlined"
               sx={{
@@ -104,7 +128,6 @@ const JobItems = () => {
                 <Box
                   component="img"
                   src={job.banner}
-                   
                   sx={{
                     maxHeight: 115,
                     maxWidth: 250,

@@ -31,6 +31,7 @@ const ProfileOverview = () => {
   const [bannerImageFile, setBannerImageFile] = useState(null);
   const profileReducer = useSelector(state => state.profileReducer);
   const [isLoading, setIsLoading] = useState(false);
+  const userType = localStorage.getItem('userType');
 
   // Fetch profile on mount
  useEffect(() => {
@@ -192,6 +193,7 @@ const ProfileOverview = () => {
                 <TextField
                   variant="standard"
                   value={fullName}
+                  placeholder= {userType === 'Candidate' ? "Name" : "Organization Name"}
                   onChange={(e) => setFullName(e.target.value)}
                   fullWidth
                   InputProps={{
@@ -202,6 +204,7 @@ const ProfileOverview = () => {
                 <TextField
                   variant="standard"
                   value={headline}
+                   placeholder= {userType === 'Candidate' ? "Occupation" : "Description"}
                   onChange={(e) => setHeadline(e.target.value)}
                   fullWidth
                   InputProps={{

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -20,11 +20,10 @@ import MuiAlert from "@mui/material/Alert";
 import TopNav from "../Layout/TopNav";
 import LeftSidebar from "../Layout/LeftSidebar";
 import RightSidebar from "../Layout/RightSidebar";
-import axios from "../../api/axios";
-import { useSelector } from "react-redux";
+import axios from "../../api/axios-recruiter";
 import LoadingOverlay from "../common/LoadingOverlay";
-
-const JobDetailsPage = () => {
+import dayjs from 'dayjs';
+const ApplicantsListPage = () => {
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -37,69 +36,32 @@ const JobDetailsPage = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const [selectedFile, setSelectedFile] = useState(null);
-  const { jobs } = useSelector((state) => state.jobsReducer);
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const job = jobs.find((job) => job._id === id);
+  const [job, setHob] = useState(null);
 
-  const handleApplyJob = async () => {
-    if (!selectedFile) {
-      setSnackbar({
-        open: true,
-        message: "Please upload your resume before applying.",
-        severity: "warning",
-      });
-      return;
-    }
+   
 
+  const fetchJobById = async (jobId) => {
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append("jobId", job._id);
-      formData.append("resume", selectedFile);
-      formData.append("applicantId",localStorage.getItem("userId")); // Replace this appropriately
-
-      const response = await axios.post("/api/candidate/jobs/apply", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.status === 200) {
-        setSnackbar({
-          open: true,
-          message: "Application submitted successfully!",
-          severity: "success",
-        });
-        setSelectedFile(null);
-        setLoading(false);
-        // wait for 2 seconds before redirecting
-        setTimeout(() => {
-          navigate("/jobs");
-        }, 2000);
-
-      } else {
-        setLoading(false);
-        setSnackbar({
-          open: true,
-          message: "Something went wrong. Please try again.",
-          severity: "error",
-        });
-        
-      }
-    } catch (error) {
-      console.error("Apply job error:", error);
-      setSnackbar({
-        open: true,
-        message: "An error occurred while applying. Please try again later.",
-        severity: "error",
-      });
+      const response = await axios.get(`/api/recruiter/jobs/getjobById/${jobId}`);
       setLoading(false);
+      setHob(response.data);
+      // return response.data;
+    } catch (error) {
+      console.error("Error fetching job:", error);
+      setLoading(false);
+      return null;
     }
   };
 
+  useEffect(() => {
+    fetchJobById(id);
+  }, [id]);
+
+ 
   if (!job) {
     return (
       <Box sx={{ p: 4 }}>
@@ -114,9 +76,54 @@ const JobDetailsPage = () => {
       <Box sx={{ display: "flex", mt: 3, px: 3, gap: 2 }}>
         <LeftSidebar />
 
+
+
+
         {/* Center Job Content */}
         <Box sx={{ flex: 1 }}>
           <LoadingOverlay isLoading={loading} />
+
+          {job.applications.length > 0 && (
+  <Box mb={4}>
+    <Typography variant="h6" fontWeight="bold" mb={2}>
+      🏅 Top Shortlisted Candidates
+    </Typography>
+    {job.applications.map((app, index) => (
+      <Card key={app._id} variant="outlined" sx={{ mb: 2, p: 2, borderRadius: 2 }}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar src={app.profileImage} alt={app.usereFullName} />
+          <Box flex={1}>
+            <Typography fontWeight="bold">
+            {'#' + Number(index + 1)}  {app.usereFullName} - {app.usereHeadline}  
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              {app.usereEail} |   📅 {dayjs(app.appliedAt).format('YYYY-MM-DD HH:mm')}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              📄 <a href={app.resume} target="_blank" rel="noopener noreferrer">View Resume</a>
+            </Typography>
+
+            {app.appliedAt && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                📅 Applied on: {dayjs(app.appliedAt).format('YYYY-MM-DD HH:mm')}
+              </Typography>
+            )}
+          </Box>
+          <Chip label={`Score: ${app.rankScore || 'N/A'}`} color="success" />
+        </Stack>
+
+        {app.systemExplanation && (
+          <Typography variant="body2" sx={{ mt: 1, color: '#444' }}>
+            🧠 <strong>Reason:</strong> {app.systemExplanation}
+          </Typography>
+        )}
+      </Card>
+    ))}
+  </Box>
+)}
+
           <Card
             variant="outlined"
             sx={{ borderRadius: 3, p: 0, backgroundColor: "white" }}
@@ -243,69 +250,10 @@ const JobDetailsPage = () => {
                 </Box>
               )}
 
-              {/* Resume Upload */}
-              {/* Resume Upload */}
-              <Box
-                sx={{
-                  mt: 3,
-                  mb: 3,
-                  p: 2,
-                  border: "1px dashed #ccc",
-                  borderRadius: 2,
-                  backgroundColor: "#fafafa",
-                }}
-              >
-                <Typography variant="h6" fontWeight="bold" mb={1}>
-                  Upload Resume
-                </Typography>
+               
 
-                <Typography variant="body2" color="text.secondary" mb={2}>
-                  Please upload your resume in PDF format.
-                </Typography>
-
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Button
-                    variant="contained"
-                    component="label"
-                    sx={{ textTransform: "none", borderRadius: 2 }}
-                  >
-                    Select PDF File
-                    <input
-                      type="file"
-                      hidden
-                      accept="application/pdf"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file && file.type === "application/pdf") {
-                          setSelectedFile(file);
-                        } else {
-                          alert("Please upload a valid PDF file.");
-                        }
-                      }}
-                    />
-                  </Button>
-
-                  {selectedFile && (
-                    <Typography variant="body2" color="text.primary">
-                      📎 {selectedFile.name}
-                    </Typography>
-                  )}
-                </Stack>
-              </Box>
-
-              {/* Apply Now */}
-              <Box sx={{ mt: 4 }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  sx={{ textTransform: "none", borderRadius: 2 }}
-                  onClick={handleApplyJob}
-                >
-                  Apply Now
-
-                </Button>
-              </Box>
+        
+              
             </CardContent>
           </Card>
         </Box>
@@ -330,4 +278,4 @@ const JobDetailsPage = () => {
   );
 };
 
-export default JobDetailsPage;
+export default ApplicantsListPage;

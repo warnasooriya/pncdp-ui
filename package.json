@@ -19,6 +19,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "aws-amplify": "^6.15.1",
     "axios": "^1.10.0",
+    "dayjs": "^1.11.13",
     "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

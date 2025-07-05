@@ -10,6 +10,10 @@ export default function UserSyncronizer() {
   const hasFetched = useRef(false);
   const sycUserWithBackend = async (user) => {
     // console.log('Syncing user with backend:', user);
+    const userType = user['custom:userType'];
+    console.log(userType);
+     localStorage.setItem('userType',userType); 
+    dispatch(setField({ name: 'userType', value: userType}));
     
     if (!user || !user.sub || !user.email) {
             console.error('User data is incomplete:', user);
@@ -18,9 +22,10 @@ export default function UserSyncronizer() {
            axios.put('/api/candidate/users',user)
       .then(res => {
         console.log('User data synced with backend:', res.data);
-        dispatch(setField({ name: 'userId', value: user.sub }));
-      dispatch(setField({ name: 'email', value: user.email })); // Assuming user attributes contain profile info
-      localStorage.setItem('userId', user.sub); // Store userId in localStorage
+
+      dispatch(setField({ name: 'userId', value: user.sub }));
+      dispatch(setField({ name: 'email', value: user.email }));
+      localStorage.setItem('userId', user.sub); 
 
       console.log('User data synced successfully:', res.data);
       })
@@ -37,6 +42,13 @@ export default function UserSyncronizer() {
         const decodedToken = jwtDecode(idToken);
         console.log('Decoded Token:', decodedToken);
         await sycUserWithBackend(decodedToken); // Sync user data with backend
+
+          axios.get('/api/candidate/profile?id='+localStorage.getItem('userId'))
+              .then(res => {
+                dispatch(setField({ name: 'profile', value: res.data }));
+              })
+              .catch(err => console.error('Error fetching profile', err));
+              
       } catch (err) {
         console.error('Error fetching user attributes', err);
       }

@@ -15,7 +15,7 @@ import { useDispatch } from 'react-redux';
 import axios from '../api/axios';
 const ProfilePage = () => {
   const dispatch = useDispatch();
-
+  const userType = localStorage.getItem('userType');
   useEffect(() => {
      axios.get('/api/candidate/profile?id='+localStorage.getItem('userId'))
       .then(res => {
@@ -33,9 +33,15 @@ const ProfilePage = () => {
 
       <ProfileOverview />
       <AboutSection />
+      {userType === 'candidate' && 
+      <>
+      <AboutSection />
       <ExperienceSection />
       <EducationSection />
       <SkillsSection />
+</>
+      
+      }
       <CertificationsSection />
       <PortfolioSection />
         </div>
