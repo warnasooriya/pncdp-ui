@@ -11,6 +11,7 @@ import {
   Avatar,
   Divider,
   IconButton,
+  TextField,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -114,15 +115,33 @@ const ApplicantsListPage = () => {
           <Chip label={`Score: ${app.rankScore || 'N/A'}`} color="success" />
         </Stack>
 
-        {app.systemExplanation && (
+        {/* {app.systemExplanation && ( */}
           <Typography variant="body2" sx={{ mt: 1, color: '#444' }}>
             🧠 <strong>Reason:</strong> {app.systemExplanation}
           </Typography>
-        )}
+        {/* )} */}
+
+
+
       </Card>
     ))}
   </Box>
 )}
+
+<Box mb={4}>
+<TextField
+              label="Ask anything"
+              name="description"
+              // value={formData.description}
+              // onChange={handleChange}
+              fullWidth
+              multiline
+              minRows={4}
+              required
+            />
+</Box>
+
+
 
           <Card
             variant="outlined"
