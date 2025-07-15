@@ -61,7 +61,7 @@ const LeftSidebar = () => {
               <ListItemIcon>
                 <GroupIcon sx={{ color: '#5e5e5e' }} />
               </ListItemIcon>
-              <ListItemText primary="My Network" />
+              <ListItemText primary="My Network"  />
             </ListItemButton>
 
             <ListItemButton>

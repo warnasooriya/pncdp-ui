@@ -8,7 +8,7 @@ import CustomAuthLayout from './CustomAuthLayout';
 Amplify.configure({
   ...awsExports,
   oauth: {
-    domain: 'ap-southeast-1dowkydchu.auth.ap-southeast-1.amazoncognito.com',
+    domain: 'ap-southeast-1uceaj7uja.auth.ap-southeast-1.amazoncognito.com',
     scope: ['email', 'profile', 'openid'],
     redirectSignIn: 'http://localhost:5173/',
     redirectSignOut: 'http://localhost:5173/',

@@ -14,6 +14,7 @@ export default function UserSyncronizer() {
     console.log(userType);
      localStorage.setItem('userType',userType); 
     dispatch(setField({ name: 'userType', value: userType}));
+    user['userType']=userType;
     
     if (!user || !user.sub || !user.email) {
             console.error('User data is incomplete:', user);
@@ -38,12 +39,13 @@ export default function UserSyncronizer() {
       try {
          const user =  await fetchAuthSession();
         const idToken = user.tokens.idToken.toString();
-        console.log('idToken', idToken);
+        // console.log('idToken', idToken);
         const decodedToken = jwtDecode(idToken);
-        console.log('Decoded Token:', decodedToken);
+        // console.log('Decoded Token:', decodedToken);
+        // console.log(localStorage.getItem('userId'));
         await sycUserWithBackend(decodedToken); // Sync user data with backend
-
-          axios.get('/api/candidate/profile?id='+localStorage.getItem('userId'))
+        const currentUserId = localStorage.getItem('userId')?? decodedToken.sub;
+          axios.get('/api/candidate/profile?id='+currentUserId)
               .then(res => {
                 dispatch(setField({ name: 'profile', value: res.data }));
               })

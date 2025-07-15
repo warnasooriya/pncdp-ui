@@ -42,6 +42,7 @@ const [newRequirement, setNewRequirement] = useState('');
       // Replace with your actual banner generation logic
       const response = await axios.post('/api/recruiter/jobs/generate-banner', {
         description: formData.description,
+        skills:formData.requirements,
         headers: { 'Content-Type': 'application/json' }
       });
 
