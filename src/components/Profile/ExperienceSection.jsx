@@ -136,6 +136,8 @@ const ExperienceSection = () => {
     await syncWithBackend(updated);
   };
 
+  
+
   return (
     <Card sx={{ borderRadius: 3, mb: 3 }}>
         <LoadingOverlay isLoading={isLoading} />

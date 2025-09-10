@@ -40,16 +40,14 @@ const ApplicantsListPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [job, setHob] = useState(null);
-
-   
+  const [job, setJob] = useState(null);
 
   const fetchJobById = async (jobId) => {
     try {
       setLoading(true);
       const response = await axios.get(`/api/recruiter/jobs/getjobById/${jobId}`);
       setLoading(false);
-      setHob(response.data);
+      setJob(response.data);
       // return response.data;
     } catch (error) {
       console.error("Error fetching job:", error);
