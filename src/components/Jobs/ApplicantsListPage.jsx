@@ -47,6 +47,8 @@ const ApplicantsListPage = () => {
       setLoading(true);
       const response = await axios.get(`/api/recruiter/jobs/getjobById/${jobId}`);
       setLoading(false);
+      const sortedList = response.data.applications.sort((a, b) => b.score - a.score);
+      response.data.applications = sortedList;
       setJob(response.data);
       // return response.data;
     } catch (error) {
@@ -61,13 +63,11 @@ const ApplicantsListPage = () => {
   }, [id]);
 
  
-  if (!job) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Typography variant="h6">Job not found</Typography>
-      </Box>
-    );
-  }
+  // if (!job) {
+  //   return (
+  //      <LoadingOverlay isLoading={loading} />
+  //   );
+  // }
 
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
@@ -82,7 +82,7 @@ const ApplicantsListPage = () => {
         <Box sx={{ flex: 1 }}>
           <LoadingOverlay isLoading={loading} />
 
-          {job.applications.length > 0 && (
+          {job?.applications?.length > 0 && (
   <Box mb={4}>
     <Typography variant="h6" fontWeight="bold" mb={2}>
       🏅 Top Shortlisted Candidates
@@ -110,12 +110,18 @@ const ApplicantsListPage = () => {
               </Typography>
             )}
           </Box>
-          <Chip label={`Score: ${app.rankScore || 'N/A'}`} color="success" />
+           
+          <Chip 
+  label={`Score: ${app.score !== undefined && app.score !== null 
+    ? app.score.toFixed(2) 
+    : 'N/A'}`} 
+  color="success" 
+/>
         </Stack>
 
         {/* {app.systemExplanation && ( */}
           <Typography variant="body2" sx={{ mt: 1, color: '#444' }}>
-            🧠 <strong>Reason:</strong> {app.systemExplanation}
+            🧠 <strong>Comment:</strong> {app?.explanation?.explainability?.comment_short}
           </Typography>
         {/* )} */}
 
@@ -146,7 +152,7 @@ const ApplicantsListPage = () => {
             sx={{ borderRadius: 3, p: 0, backgroundColor: "white" }}
           >
             {/* Banner Image */}
-            {job.banner && (
+            {job?.banner && (
               <Box
                 sx={{
                   width: "100%",
@@ -157,7 +163,7 @@ const ApplicantsListPage = () => {
                 }}
               >
                 <img
-                  src={job.banner}
+                  src={job?.banner}
                   alt="Job Banner"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
@@ -183,10 +189,10 @@ const ApplicantsListPage = () => {
                     )}
                     <Box>
                       <Typography variant="h5" fontWeight="bold">
-                        {job.title}
+                        {job?.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {job?.user?.name} | {job.location}
+                        {job?.user?.name} | {job?.location}
                       </Typography>
                     </Box>
                   </Stack>
@@ -213,7 +219,7 @@ const ApplicantsListPage = () => {
 
               {/* Job Type */}
               <Stack direction="row" spacing={1} mb={2}>
-                <Chip label={job.jobType} size="small" color="primary" />
+                <Chip label={job?.jobType} size="small" color="primary" />
               </Stack>
 
               {/* Description */}
@@ -222,18 +228,18 @@ const ApplicantsListPage = () => {
                   Job Description
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  {job.description}
+                  {job?.description}
                 </Typography>
               </Box>
 
               {/* Requirements */}
-              {job.requirements?.length > 0 && (
+              {job?.requirements?.length > 0 && (
                 <Box mb={3}>
                   <Typography variant="h6" fontWeight="bold" mb={1}>
                     Requirements
                   </Typography>
                   <ul style={{ paddingLeft: "20px" }}>
-                    {job.requirements.map((req, index) => (
+                    {job?.requirements.map((req, index) => (
                       <li key={index}>
                         <Typography variant="body2" color="text.secondary">
                           {req}
@@ -245,7 +251,7 @@ const ApplicantsListPage = () => {
               )}
 
               {/* Publisher Info */}
-              {job.postedBy && (
+              {job?.postedBy && (
                 <Box mt={2} mb={3}>
                   <Typography
                     variant="subtitle2"
@@ -256,12 +262,12 @@ const ApplicantsListPage = () => {
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar
-                      src={job.postedBy.logo}
-                      alt={job.postedBy.name}
+                      src={job?.postedBy.logo}
+                      alt={job?.postedBy.name}
                       sx={{ width: 48, height: 48 }}
                     />
                     <Typography variant="body1" fontWeight="medium">
-                      {job.postedBy.name}
+                      {job?.postedBy.name}
                     </Typography>
                   </Stack>
                 </Box>
