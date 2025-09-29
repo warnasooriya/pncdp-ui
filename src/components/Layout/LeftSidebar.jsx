@@ -57,28 +57,28 @@ const LeftSidebar = () => {
         {/* Quick Access Card */}
         <Card variant="outlined" sx={{ borderRadius: 3 }}>
           <List disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate('/mynetwork')}>
               <ListItemIcon>
                 <GroupIcon sx={{ color: '#5e5e5e' }} />
               </ListItemIcon>
               <ListItemText primary="My Network"  />
             </ListItemButton>
 
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate('/jobs')}>
               <ListItemIcon>
                 <WorkIcon sx={{ color: '#5e5e5e' }} />
               </ListItemIcon>
               <ListItemText primary="Jobs" />
             </ListItemButton>
 
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate('/messages')}>
               <ListItemIcon>
                 <ChatBubbleOutlineIcon sx={{ color: '#5e5e5e' }} />
               </ListItemIcon>
               <ListItemText primary="Messaging" />
             </ListItemButton>
 
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate('/notifications')}>
               <ListItemIcon>
                 <NotificationsNoneIcon sx={{ color: '#5e5e5e' }} />
               </ListItemIcon>

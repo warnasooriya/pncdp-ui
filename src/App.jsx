@@ -5,7 +5,8 @@ import ProfilePage from './pages/ProfilePage';
 import MyNetwork from './pages/MyNetwork';
 import JobDetailsPage from './components/Jobs/JobDetailsPage';
 import JobsPage from './pages/JobsPage';
- 
+import MessagesPage from './pages/MessagesPage';
+import NotificationsPage from './pages/NotificationsPage';
 import JobCreateForm from './components/Organization/JobCreateForm';
 import ApplicationsPage from './pages/ApplicationsPage';
 import ApplicantsListPage from './components/Jobs/ApplicantsListPage';
@@ -27,6 +28,8 @@ function App() {
       <Route path="/mynetwork" element={<MyNetwork />} />
       <Route path="/jobs" element={<JobsPage />} />
       <Route path="/jobs/:id" element={<JobDetailsPage />} />
+      <Route path="/messages" element={<MessagesPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/post-job" element={<JobCreateForm />} />
       <Route path="/applications" element={<ApplicationsPage />} />
       <Route path="/job-applications/:id" element={<ApplicantsListPage />} />

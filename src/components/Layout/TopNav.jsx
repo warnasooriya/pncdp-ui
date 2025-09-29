@@ -35,8 +35,8 @@ const TopNav = () => {
       baseLinks.push({ icon: AutoFixHighIcon , label: 'Job Applications', link: '/applications' });
     }
 
-     baseLinks.push({ icon: MessageIcon, label: 'Messaging', badge: 2 });
-      baseLinks.push({ icon: NotificationsIcon, label: 'Notifications', badge: 5 });
+     baseLinks.push({ icon: MessageIcon, label: 'Messaging', badge: 2, link: '/messages' });
+      baseLinks.push({ icon: NotificationsIcon, label: 'Notifications', badge: 5, link: '/notifications' });
 
     return baseLinks;
   }, [userType]);
