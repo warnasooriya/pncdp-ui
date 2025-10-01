@@ -1,4 +1,4 @@
-import React ,{useEffect}from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
@@ -10,6 +10,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import JobCreateForm from './components/Organization/JobCreateForm';
 import ApplicationsPage from './pages/ApplicationsPage';
 import ApplicantsListPage from './components/Jobs/ApplicantsListPage';
+import ConnectedUserProfile from './components/Profile/ConnectedUserProfile';
 // import { useSelector } from 'react-redux';
 // import LoginPage from './pages/LoginPage'; // We'll create a basic one now
 
@@ -24,6 +25,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       {/* <Route path="/login" element={<LoginPage />} /> */}
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile/:userId" element={<ConnectedUserProfile />} />
       {/* Add more routes here later if needed */}
       <Route path="/mynetwork" element={<MyNetwork />} />
       <Route path="/jobs" element={<JobsPage />} />

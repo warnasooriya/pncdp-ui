@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { 
   fetchNetworkDataWithStatuses, 
   sendConnectionRequest, 
@@ -20,12 +21,14 @@ import {
   Close, 
   PersonRemove, 
   MoreVert,
-  Message
+  Message,
+  Person
 } from '@mui/icons-material';
 import LoadingOverlay from '../common/LoadingOverlay';
 
 const ManageNetworkItem = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { data, selectedCategory, loading, connectionStatuses, actionLoading, error } = useSelector((state) => state.network);
   
   // Get user info from localStorage since auth reducer doesn't exist
@@ -214,17 +217,29 @@ const ManageNetworkItem = () => {
 
       case 'connections':
         return (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Button
-              variant="outlined"
-              startIcon={<Message />}
-              sx={{ borderRadius: 20, textTransform: 'none', flex: 1 }}
-            >
-              Message
-            </Button>
+          <Stack direction="column" spacing={1}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Button
+                variant="outlined"
+                startIcon={<Person />}
+                onClick={() => navigate(`/profile/${userId}`)}
+                sx={{ borderRadius: 20, textTransform: 'none', flex: 1 }}
+              >
+                View Profile
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<Message />}
+                onClick={() => navigate(`/messages?userId=${userId}`)}
+                sx={{ borderRadius: 20, textTransform: 'none', flex: 1 }}
+              >
+                Message
+              </Button>
+            </Stack>
             <IconButton
               onClick={(e) => setMenuAnchor({ element: e.currentTarget, userId, connectionId })}
               size="small"
+              sx={{ alignSelf: 'center' }}
             >
               <MoreVert />
             </IconButton>
