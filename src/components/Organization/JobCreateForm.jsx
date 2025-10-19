@@ -37,22 +37,54 @@ const [newRequirement, setNewRequirement] = useState('');
   };
 
   const generateBanner = async () => {
+    // Validate required fields before generating banner
+    if (!formData.description || formData.description.length < 50) {
+      setSubmitStatus({ 
+        loading: false, 
+        error: 'Please provide a detailed job description (at least 50 characters) before generating a banner.', 
+        success: '' 
+      });
+      return;
+    }
+
+    if (!formData.title) {
+      setSubmitStatus({ 
+        loading: false, 
+        error: 'Please provide a job title before generating a banner.', 
+        success: '' 
+      });
+      return;
+    }
+
     setSubmitStatus({ loading: true, error: '', success: '' });
     try {
-      // Replace with your actual banner generation logic
+      // Enhanced banner generation with more context
       const response = await axios.post('/api/recruiter/jobs/generate-banner', {
+        title: formData.title,
         description: formData.description,
-        skills:formData.requirements,
+        skills: formData.requirements,
+        location: formData.location,
+        type: formData.type
+      }, {
         headers: { 'Content-Type': 'application/json' }
       });
 
-      // console.log('Banner generation response:', response.data);
+      console.log('Banner generation response:', response.data);
       setBannerPreview(response.data.originalUrl);
       setFormData((prev) => ({ ...prev, banner: response.data.imagePath }));
       
-      setSubmitStatus({ loading: false, error: '', success: 'Banner generated successfully!' });
+      setSubmitStatus({ 
+        loading: false, 
+        error: '', 
+        success: 'Professional banner generated successfully! The banner is designed to match your job description and requirements.' 
+      });
     } catch (err) {
-      setSubmitStatus({ loading: false, error: 'Failed to generate banner.', success: '' });
+      const errorMessage = err.response?.data?.error || 'Failed to generate banner. Please try again.';
+      setSubmitStatus({ 
+        loading: false, 
+        error: `Banner Generation Error: ${errorMessage}`, 
+        success: '' 
+      });
       console.error('Error generating banner:', err);
     }
   };
@@ -231,11 +263,27 @@ const [newRequirement, setNewRequirement] = useState('');
             <Button
               variant="outlined"
               component="label"
-              sx={{ mb: 2 }}
-              disabled={submitStatus.loading}
+              sx={{ 
+                mb: 2,
+                textTransform: 'none',
+                borderColor: '#1976d2',
+                color: '#1976d2',
+                '&:hover': {
+                  borderColor: '#1565c0',
+                  backgroundColor: 'rgba(25, 118, 210, 0.04)'
+                }
+              }}
+              disabled={submitStatus.loading || !formData.title || !formData.description}
               onClick={generateBanner}
             >
-              Generate Banner</Button>
+              {submitStatus.loading ? 'Generating Professional Banner...' : 'Generate AI Banner'}
+            </Button>
+            
+            {(!formData.title || !formData.description) && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                Please fill in the job title and description first to generate a matching banner.
+              </Typography>
+            )}
 
  {/* Banner Upload Section */}
             <Box>

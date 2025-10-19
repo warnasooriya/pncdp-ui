@@ -39,7 +39,7 @@ const MessagesPage = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
-  const targetUserId = searchParams.get('targetUserId');
+  const targetUserId = searchParams.get('userId');
 
   // Get current user from localStorage or context
   const currentUser = localStorage.getItem('userId');
@@ -92,46 +92,42 @@ const MessagesPage = () => {
 
   // Send message
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
-    
-    setSendingMessage(true);
-    try {
-      let conversationId = selectedConversation;
-      
-      // If no conversation exists and we have a target user, create one
-      if (!selectedConversation && targetUserId) {
-        const response = await axios.post('/api/candidate/messages/send', {
-          senderId: currentUser,
-          receiverId: targetUserId,
-          content: newMessage
-        });
-        conversationId = response.data.conversationId;
-        setSelectedConversation(conversationId);
-        await fetchConversations(); // Refresh conversations list
-      } else if (selectedConversation) {
-        // Send message to existing conversation
-        const conversation = conversations.find(c => c._id === selectedConversation);
-        const otherParticipant = conversation?.participants.find(p => p._id !== currentUser);
+    if (newMessage.trim() && selectedConversation) {
+      setSendingMessage(true);
+      try {
+        let conversationId = selectedConversation;
         
-        await axios.post('/api/candidate/messages/send', {
-          senderId: currentUser,
-          receiverId: otherParticipant?._id,
-          content: newMessage
-        });
-      } else {
-        setError('Please select a conversation or user to message');
+        // If no conversation exists and we have a target user, create one
+        if (!selectedConversation && targetUserId) {
+          const response = await axios.post('/api/candidate/messages/send', {
+            senderId: currentUser._id,
+            receiverId: targetUserId,
+            content: newMessage
+          });
+          conversationId = response.data.conversationId;
+          setSelectedConversation(conversationId);
+          await fetchConversations(); // Refresh conversations list
+        } else {
+          // Send message to existing conversation
+          const conversation = conversations.find(c => c._id === selectedConversation);
+          const otherParticipant = conversation?.participants.find(p => p.userId !== currentUser._id);
+          
+          await axios.post('/api/candidate/messages/send', {
+            senderId: currentUser._id,
+            receiverId: otherParticipant?.userId,
+            content: newMessage
+          });
+        }
+        
+        setNewMessage('');
+        await fetchMessages(conversationId); // Refresh messages
+        await fetchConversations(); // Update conversation list with new last message
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setError('Failed to send message');
+      } finally {
         setSendingMessage(false);
-        return;
       }
-      
-      setNewMessage('');
-      await fetchMessages(conversationId); // Refresh messages
-      await fetchConversations(); // Update conversation list with new last message
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setError('Failed to send message');
-    } finally {
-      setSendingMessage(false);
     }
   };
 
@@ -184,23 +180,8 @@ const MessagesPage = () => {
     }
   }, [selectedConversation]);
 
-  // Polling for new messages and conversations
-  useEffect(() => {
-    const pollInterval = setInterval(() => {
-      // Refresh conversations to get updated message counts and last messages
-      fetchConversations();
-      
-      // Refresh messages for the selected conversation
-      if (selectedConversation) {
-        fetchMessages(selectedConversation);
-      }
-    }, 5000); // Poll every 5 seconds
-
-    return () => clearInterval(pollInterval);
-  }, [selectedConversation]);
-
   const filteredConversations = conversations.filter(conv => {
-    const otherParticipant = conv.participants.find(p => p._id !== currentUser);
+    const otherParticipant = conv.participants.find(p => p._id !== currentUser._id);
     return otherParticipant?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
   });
 
@@ -244,7 +225,7 @@ const MessagesPage = () => {
                     <CircularProgress />
                   </Box>
                 ) : filteredConversations.map((conversation) => {
-                  const otherParticipant = conversation.participants.find(p => p._id !== currentUser);
+                  const otherParticipant = conversation.participants.find(p => p._id !== currentUser._id);
                   return <ListItem
                     key={conversation._id}
                     button
@@ -264,24 +245,17 @@ const MessagesPage = () => {
                     <ListItemText
                       primary={
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: conversation.unreadCount > 0 ? 'bold' : 'normal' }}>
+                          <Typography variant="subtitle2">
                             {otherParticipant?.fullName || 'Unknown User'}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            {conversation.messageCount > 0 && (
-                              <Typography variant="caption" color="text.secondary">
-                                {conversation.messageCount} msg{conversation.messageCount !== 1 ? 's' : ''}
-                              </Typography>
-                            )}
-                            {conversation.unreadCount > 0 && (
-                              <Chip
-                                label={conversation.unreadCount}
-                                size="small"
-                                color="primary"
-                                sx={{ minWidth: 20, height: 20, fontSize: '0.7rem' }}
-                              />
-                            )}
-                          </Box>
+                          {conversation.unreadCount > 0 && (
+                            <Chip
+                              label={conversation.unreadCount}
+                              size="small"
+                              color="primary"
+                              sx={{ minWidth: 20, height: 20 }}
+                            />
+                          )}
                         </Box>
                       }
                       secondary={
@@ -366,215 +340,94 @@ const MessagesPage = () => {
               {selectedConversation ? (
                 <>
                   {/* Chat Header */}
-                  <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Stack direction="row" alignItems="center" spacing={2}>
-                        {(() => {
-                          const conversation = conversations.find(c => c._id === selectedConversation);
-                          const otherParticipant = conversation?.participants.find(p => p._id !== currentUser);
-                          return (
-                            <>
-                              <Avatar src={otherParticipant?.profileImage} sx={{ width: 48, height: 48 }}>
-                                {otherParticipant?.fullName?.charAt(0) || 'U'}
-                              </Avatar>
-                              <Box>
-                                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                  {otherParticipant?.fullName || 'Unknown User'}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {otherParticipant?.headline || 'No headline'}
-                                </Typography>
-                              </Box>
-                            </>
-                          );
-                        })()}
-                      </Stack>
-                      
-                      {/* Conversation Stats */}
-                      <Box sx={{ textAlign: 'right' }}>
-                        {(() => {
-                          const conversation = conversations.find(c => c._id === selectedConversation);
-                          return (
-                            <Stack spacing={0.5}>
-                              {conversation?.messageCount > 0 && (
-                                <Typography variant="caption" color="text.secondary">
-                                  {conversation.messageCount} message{conversation.messageCount !== 1 ? 's' : ''}
-                                </Typography>
-                              )}
-                              {conversation?.unreadCount > 0 && (
-                                <Chip
-                                  label={`${conversation.unreadCount} unread`}
-                                  size="small"
-                                  color="primary"
-                                  variant="outlined"
-                                />
-                              )}
-                            </Stack>
-                          );
-                        })()}
-                      </Box>
+                  <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      {(() => {
+                        const conversation = conversations.find(c => c._id === selectedConversation);
+                        const otherParticipant = conversation?.participants.find(p => p._id !== currentUser._id);
+                        return (
+                          <>
+                            <Avatar src={otherParticipant?.profileImage}>
+                              {otherParticipant?.fullName?.charAt(0) || 'U'}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="h6">
+                                {otherParticipant?.fullName || 'Unknown User'}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {otherParticipant?.headline || 'No headline'}
+                              </Typography>
+                            </Box>
+                          </>
+                        );
+                      })()}
                     </Stack>
                   </Box>
 
                   {/* Messages */}
-                  <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: 'grey.50' }}>
-                    <Stack spacing={1}>
-                      {messages.length === 0 ? (
-                        <Box sx={{ textAlign: 'center', py: 4 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            No messages yet. Start the conversation!
-                          </Typography>
-                        </Box>
-                      ) : (
-                        messages.map((message, index) => {
-                          const isOwn = message.senderId._id === currentUser;
-                          const showAvatar = index === 0 || messages[index - 1].senderId._id !== message.senderId._id;
-                          const showTimestamp = index === messages.length - 1 || 
-                            new Date(messages[index + 1].createdAt) - new Date(message.createdAt) > 300000; // 5 minutes
-                          
-                          return (
-                            <Box key={message._id}>
-                              <Box
+                  <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+                    <Stack spacing={2}>
+                      {messages.map((message) => {
+                        const isOwn = message.senderId._id === currentUser._id;
+                        return (
+                          <Box
+                            key={message._id}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: isOwn ? 'flex-end' : 'flex-start'
+                            }}
+                          >
+                            <Paper
+                              sx={{
+                                p: 1.5,
+                                maxWidth: '70%',
+                                bgcolor: isOwn ? 'primary.main' : 'grey.100',
+                                color: isOwn ? 'white' : 'text.primary'
+                              }}
+                            >
+                              <Typography variant="body2">
+                                {message.content}
+                              </Typography>
+                              <Typography
+                                variant="caption"
                                 sx={{
-                                  display: 'flex',
-                                  flexDirection: isOwn ? 'row-reverse' : 'row',
-                                  alignItems: 'flex-end',
-                                  gap: 1,
-                                  mb: showTimestamp ? 1 : 0
+                                  display: 'block',
+                                  mt: 0.5,
+                                  opacity: 0.7
                                 }}
                               >
-                                {/* Avatar */}
-                                <Box sx={{ width: 32, height: 32, display: 'flex', alignItems: 'flex-end' }}>
-                                  {showAvatar && !isOwn && (
-                                    <Avatar 
-                                      src={message.senderId.profileImage} 
-                                      sx={{ width: 28, height: 28, fontSize: '0.8rem' }}
-                                    >
-                                      {message.senderId.fullName?.charAt(0) || 'U'}
-                                    </Avatar>
-                                  )}
-                                </Box>
-
-                                {/* Message Bubble */}
-                                <Paper
-                                  elevation={1}
-                                  sx={{
-                                    p: 1.5,
-                                    maxWidth: '65%',
-                                    bgcolor: isOwn ? 'primary.main' : 'white',
-                                    color: isOwn ? 'white' : 'text.primary',
-                                    borderRadius: 2,
-                                    borderTopLeftRadius: !isOwn && showAvatar ? 0.5 : 2,
-                                    borderTopRightRadius: isOwn && showAvatar ? 0.5 : 2,
-                                    position: 'relative'
-                                  }}
-                                >
-                                  {!isOwn && showAvatar && (
-                                    <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.8, display: 'block', mb: 0.5 }}>
-                                      {message.senderId.fullName}
-                                    </Typography>
-                                  )}
-                                  <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                    {message.content}
-                                  </Typography>
-                                </Paper>
-                              </Box>
-
-                              {/* Timestamp */}
-                              {showTimestamp && (
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{
-                                    display: 'block',
-                                    textAlign: isOwn ? 'right' : 'left',
-                                    mt: 0.5,
-                                    ml: isOwn ? 0 : 5,
-                                    mr: isOwn ? 5 : 0
-                                  }}
-                                >
-                                  {(() => {
-                                    const messageDate = new Date(message.createdAt);
-                                    const now = new Date();
-                                    const diffInHours = (now - messageDate) / (1000 * 60 * 60);
-                                    
-                                    if (diffInHours < 24) {
-                                      return messageDate.toLocaleTimeString([], { 
-                                        hour: '2-digit', 
-                                        minute: '2-digit' 
-                                      });
-                                    } else if (diffInHours < 168) { // 7 days
-                                      return messageDate.toLocaleDateString([], { 
-                                        weekday: 'short',
-                                        hour: '2-digit', 
-                                        minute: '2-digit' 
-                                      });
-                                    } else {
-                                      return messageDate.toLocaleDateString([], { 
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit', 
-                                        minute: '2-digit' 
-                                      });
-                                    }
-                                  })()}
-                                </Typography>
-                              )}
-                            </Box>
-                          );
-                        })
-                      )}
+                                {new Date(message.createdAt).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </Typography>
+                            </Paper>
+                          </Box>
+                        );
+                      })}
                     </Stack>
                   </Box>
 
                   {/* Message Input */}
-                  <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-                    <Stack direction="row" spacing={1} alignItems="flex-end">
+                  <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+                    <Stack direction="row" spacing={1} alignItems="center">
                       <TextField
                         fullWidth
-                        multiline
-                        maxRows={4}
+                        size="small"
                         placeholder="Type a message..."
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey && !sendingMessage) {
-                            e.preventDefault();
+                          if (e.key === 'Enter' && !sendingMessage) {
                             handleSendMessage();
                           }
                         }}
                         disabled={sendingMessage}
-                        variant="outlined"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 3,
-                            bgcolor: 'grey.50',
-                            '&:hover': {
-                              bgcolor: 'grey.100'
-                            },
-                            '&.Mui-focused': {
-                              bgcolor: 'white'
-                            }
-                          }
-                        }}
                       />
                       <IconButton
                         color="primary"
                         onClick={handleSendMessage}
                         disabled={!newMessage.trim() || sendingMessage}
-                        sx={{
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          '&:hover': {
-                            bgcolor: 'primary.dark'
-                          },
-                          '&.Mui-disabled': {
-                            bgcolor: 'grey.300',
-                            color: 'grey.500'
-                          },
-                          width: 48,
-                          height: 48
-                        }}
                       >
                         {sendingMessage ? <CircularProgress size={20} /> : <SendIcon />}
                       </IconButton>
