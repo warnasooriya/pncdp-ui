@@ -45,7 +45,7 @@ import {
   formatTimeAgo,
   extractHashtags,
   extractMentions,
-} from "../../services/postService";
+} from "../../services/PostService";
 
 const CenterFeed = () => {
   // State management
