@@ -1,29 +1,11 @@
-import axios from 'axios';
 
-// Base API URL - adjust according to your backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
-// Create axios instance with default config
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests if available
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
+import axios from "../api/axios";
+ 
+ 
 // Post creation
 export const createPost = async (postData) => {
   try {
-    const response = await api.post('/posts', postData);
+    const response = await axios.post('/api/candidate/posts', postData);
     return response.data;
   } catch (error) {
     console.error('Error creating post:', error);
@@ -32,9 +14,9 @@ export const createPost = async (postData) => {
 };
 
 // Get feed posts with pagination
-export const getFeedPosts = async (page = 1, limit = 10) => {
+export const getFeedPosts = async (pagination) => {
   try {
-    const response = await api.get(`/posts/feed?page=${page}&limit=${limit}`);
+    const response = await axios.get(`/api/candidate/posts/feed?page=${pagination.page}&limit=${pagination.limit}&userId=${pagination.userId}&sortBy=${pagination.sortBy}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching feed posts:', error);
@@ -67,7 +49,7 @@ export const getFeedPosts = async (page = 1, limit = 10) => {
 // Toggle like on a post
 export const toggleLike = async (postId) => {
   try {
-    const response = await api.post(`/posts/${postId}/like`);
+    const response = await axios.post(`/api/candidate/posts/${postId}/like`);
     return response.data;
   } catch (error) {
     console.error('Error toggling like:', error);
@@ -78,7 +60,7 @@ export const toggleLike = async (postId) => {
 // Add comment to a post
 export const addComment = async (postId, commentData) => {
   try {
-    const response = await api.post(`/posts/${postId}/comments`, commentData);
+    const response = await axios.post(`/api/candidate/posts/${postId}/comments`, commentData);
     return response.data;
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -89,7 +71,7 @@ export const addComment = async (postId, commentData) => {
 // Get comments for a post
 export const getPostComments = async (postId) => {
   try {
-    const response = await api.get(`/posts/${postId}/comments`);
+    const response = await axios.get(`/api/candidate/posts/${postId}/comments`);
     return response.data;
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -100,7 +82,7 @@ export const getPostComments = async (postId) => {
 // Share a post
 export const sharePost = async (postId, shareData) => {
   try {
-    const response = await api.post(`/posts/${postId}/share`, shareData);
+    const response = await axios.post(`/api/candidate/posts/${postId}/share`, shareData);
     return response.data;
   } catch (error) {
     console.error('Error sharing post:', error);
