@@ -39,22 +39,23 @@ const MessagesPage = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
-  const targetUserId = searchParams.get('userId');
+  const [composeTargetUserId, setComposeTargetUserId] = useState(null);
+  const targetUserId = composeTargetUserId || searchParams.get('targetUserId');
 
   // Get current user from localStorage or context
-  const currentUser = localStorage.getItem('userId');
+  const currentUserId = localStorage.getItem('userId');
 
   // Fetch conversations
   const fetchConversations = async () => {
     try {
-      console.log('Fetching conversations for user:', currentUser);
-      const response = await axios.get(`/api/candidate/messages/conversations/${currentUser}`);
+      console.log('Fetching conversations for user:', currentUserId);
+      const response = await axios.get(`/api/candidate/messages/conversations/${currentUserId}`);
       setConversations(response.data.conversations || []);
       
       // If targetUserId is provided, find or create conversation
       if (targetUserId && response.data.conversations) {
         const existingConversation = response.data.conversations.find(conv => 
-          conv.participants.some(p => p._id === targetUserId)
+          conv.participants?.some(p => p._id === targetUserId)
         );
         if (existingConversation) {
           setSelectedConversation(existingConversation._id);
@@ -81,7 +82,7 @@ const MessagesPage = () => {
   const fetchConnectedUsers = async () => {
     try {
       setLoadingConnections(true);
-      const response = await axios.get(`/api/candidate/network/connections/${currentUser}`);
+      const response = await axios.get(`/api/candidate/network/connections/${currentUserId}`);
       setConnectedUsers(response.data || []);
     } catch (error) {
       console.error('Error fetching connected users:', error);
@@ -92,15 +93,15 @@ const MessagesPage = () => {
 
   // Send message
   const handleSendMessage = async () => {
-    if (newMessage.trim() && selectedConversation) {
+    if (!newMessage.trim()) return;
+    if (selectedConversation || targetUserId) {
       setSendingMessage(true);
       try {
         let conversationId = selectedConversation;
         
-        // If no conversation exists and we have a target user, create one
         if (!selectedConversation && targetUserId) {
           const response = await axios.post('/api/candidate/messages/send', {
-            senderId: currentUser._id,
+            senderId: currentUserId,
             receiverId: targetUserId,
             content: newMessage
           });
@@ -108,13 +109,12 @@ const MessagesPage = () => {
           setSelectedConversation(conversationId);
           await fetchConversations(); // Refresh conversations list
         } else {
-          // Send message to existing conversation
           const conversation = conversations.find(c => c._id === selectedConversation);
-          const otherParticipant = conversation?.participants.find(p => p.userId !== currentUser._id);
+          const otherParticipant = conversation?.participants?.find(p => p._id !== currentUserId);
           
           await axios.post('/api/candidate/messages/send', {
-            senderId: currentUser._id,
-            receiverId: otherParticipant?.userId,
+            senderId: currentUserId,
+            receiverId: otherParticipant?._id,
             content: newMessage
           });
         }
@@ -134,6 +134,7 @@ const MessagesPage = () => {
   // Handle conversation selection
   const handleConversationSelect = async (conversationId) => {
     setSelectedConversation(conversationId);
+    setComposeTargetUserId(null);
     await fetchMessages(conversationId);
     
     // Mark messages as read
@@ -149,6 +150,7 @@ const MessagesPage = () => {
   const handleStartNewConversation = (user) => {
     // Set the target user for new conversation
     setSelectedConversation(null);
+    setComposeTargetUserId(user._id);
     setMessages([]);
     
     // Update URL to include the target user
@@ -181,7 +183,7 @@ const MessagesPage = () => {
   }, [selectedConversation]);
 
   const filteredConversations = conversations.filter(conv => {
-    const otherParticipant = conv.participants.find(p => p._id !== currentUser._id);
+    const otherParticipant = conv.participants?.find(p => p._id !== currentUserId);
     return otherParticipant?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
   });
 
@@ -337,14 +339,16 @@ const MessagesPage = () => {
 
             {/* Chat Area */}
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              {selectedConversation ? (
+              {selectedConversation || targetUserId ? (
                 <>
                   {/* Chat Header */}
                   <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
                     <Stack direction="row" alignItems="center" spacing={2}>
                       {(() => {
                         const conversation = conversations.find(c => c._id === selectedConversation);
-                        const otherParticipant = conversation?.participants.find(p => p._id !== currentUser._id);
+                        const otherParticipant = selectedConversation
+                          ? conversation?.participants?.find(p => p._id !== currentUserId)
+                          : connectedUsers.find(u => u._id === targetUserId);
                         return (
                           <>
                             <Avatar src={otherParticipant?.profileImage}>
@@ -368,7 +372,7 @@ const MessagesPage = () => {
                   <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
                     <Stack spacing={2}>
                       {messages.map((message) => {
-                        const isOwn = message.senderId._id === currentUser._id;
+                        const isOwn = (message.senderId?._id || message.senderId) === currentUserId;
                         return (
                           <Box
                             key={message._id}
@@ -397,14 +401,18 @@ const MessagesPage = () => {
                                 }}
                               >
                                 {new Date(message.createdAt).toLocaleTimeString([], { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
+                                  hour: '2-digit', minute: '2-digit' 
                                 })}
                               </Typography>
                             </Paper>
                           </Box>
                         );
                       })}
+                      {!selectedConversation && targetUserId && messages.length === 0 && (
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          Start a new conversation
+                        </Typography>
+                      )}
                     </Stack>
                   </Box>
 
