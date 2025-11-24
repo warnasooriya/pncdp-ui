@@ -10,8 +10,8 @@ Amplify.configure({
   oauth: {
     domain: 'ap-southeast-1uceaj7uja.auth.ap-southeast-1.amazoncognito.com',
     scope: ['email', 'profile', 'openid'],
-    redirectSignIn: 'http://localhost:5173/',
-    redirectSignOut: 'http://localhost:5173/',
+    redirectSignIn: 'https://nextgencareerhub.site/',
+    redirectSignOut: 'https://nextgencareerhub.site/',
     responseType: 'code', 
   },
 });
