@@ -16,7 +16,9 @@ export const createPost = async (postData) => {
 // Get feed posts with pagination
 export const getFeedPosts = async (pagination) => {
   try {
-    const response = await axios.get(`/api/candidate/posts/feed?page=${pagination.page}&limit=${pagination.limit}&userId=${pagination.userId}&sortBy=${pagination.sortBy}`);
+    
+    const userId = localStorage.getItem('userId');
+    const response = await axios.get(`/api/candidate/posts/feed?page=${pagination.page}&limit=${pagination.limit}&userId=${userId}&sortBy=${pagination.sortBy}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching feed posts:', error);

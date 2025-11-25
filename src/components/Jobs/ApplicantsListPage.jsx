@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
+import { 
   Box,
   Typography,
   Stack,
@@ -341,7 +341,7 @@ const ApplicantsListPage = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-    const handleKeyDown = async (e) => {
+  const handleKeyDown = async (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault(); // prevent new line
       console.log("API call with:", query);
@@ -498,7 +498,7 @@ const ApplicantsListPage = () => {
                   </Box>
 <p></p>
                   {/* Short comment */}
-                  {app?.explanation?.explainability?.comment_short && (
+                  {app?.explanation?.explainability?.rank_comment && (
                     <Box sx={{ px: 2, pb: 1 }}>
                       <Card
                         variant="outlined"
@@ -528,7 +528,7 @@ const ApplicantsListPage = () => {
                                Comment
                             </Typography>
                             <Typography variant="body2" sx={{ color: "#444" }}>
-                              {app?.explanation?.explainability?.comment_short}
+                              {app?.explanation?.explainability?.rank_comment}
                             </Typography>
                           </Box>
                         </Stack>
@@ -640,7 +640,7 @@ const ApplicantsListPage = () => {
           {/* Ask box */}
           <Box mb={4}>
             <TextField
-              label="Ask anything"
+              label="Ask or add feedback to refine ranking"
               name="description"
               fullWidth
               multiline

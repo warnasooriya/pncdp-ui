@@ -35,6 +35,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+
 import {
   createPost,
   getFeedPosts,
@@ -46,6 +47,8 @@ import {
   extractHashtags,
   extractMentions,
 } from "../../services/PostService";
+
+import { useSelector } from 'react-redux';
 
 const CenterFeed = () => {
   // State management
@@ -83,6 +86,8 @@ const CenterFeed = () => {
   const [videoFile, setVideoFile] = useState(null);
   const [videoDescription, setVideoDescription] = useState("");
 
+   const profile = useSelector(state => state.profileReducer.profile);
+   const currentUserId = profile?._id || localStorage.getItem('userId');
   // Event creation state
   const [eventData, setEventData] = useState({
     title: "",
@@ -101,13 +106,12 @@ const CenterFeed = () => {
     image: null
   });
 
-  // Get current user ID
-  const currentUserId = localStorage.getItem('userId');
-
+  
   // Load posts on component mount
   useEffect(() => {
+    if (!currentUserId) return;
     loadPosts();
-  }, []);
+  }, [currentUserId]);
 
   // Load posts from backend
   const loadPosts = async (pageNum = 1, append = false) => {
