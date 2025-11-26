@@ -10,7 +10,11 @@ export default function UserSyncronizer() {
   const hasFetched = useRef(false);
   const sycUserWithBackend = async (user) => {
     // console.log('Syncing user with backend:', user);
-    const userType = user['custom:userType'];
+    let userType = user['custom:userType'];
+    const userTypes = user['custom:userTypes'];
+    if (userTypes) {
+      userType = userTypes;
+    }
     console.log(userType);
      localStorage.setItem('userType',userType); 
     dispatch(setField({ name: 'userType', value: userType}));

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   Box,
@@ -336,6 +336,9 @@ const ApplicantsListPage = () => {
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [query, setQuery] = useState("");
+  const [rankingJobId, setRankingJobId] = useState(null);
+  const [pollTimer, setPollTimer] = useState(null);
+    const [apiResponseStatus ,setApiResponseStatus] = useState(false);
 
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
@@ -345,23 +348,51 @@ const ApplicantsListPage = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault(); // prevent new line
       console.log("API call with:", query);
-
+      setCallingApi(true);
      fetchJobById(id,query);
     }
   };
 
   const fetchJobById = async (jobId,comment) => {
-    
-   
     try {
       setLoading(true);
-      const response = await axios.post(`/api/recruiter/jobs/getjobById/${jobId}`,{comment});
-      const data = response?.data || {};
-      const sortedList = (data.applications || []).sort(
-        (a, b) => (b?.score ?? 0) - (a?.score ?? 0)
-      );
-      data.applications = sortedList;
-      setJob(data);
+      setApiResponseStatus(false);
+      const startRes = await axios.post(`/api/recruiter/jobs/ranking/start/${jobId}`, { comment });
+      const rid = startRes?.data?.rankingJobId;
+       setJob(startRes?.data?.job || {});
+      setRankingJobId(rid);
+      if (pollTimer) {
+        clearInterval(pollTimer);
+      }
+      const t = setInterval(async () => {
+        try {
+          const st = await axios.get(`/api/recruiter/jobs/ranking/status/${rid}`);
+          const state = st?.data?.state;
+          if (state === 'done') {
+            setApiResponseStatus(true);
+            const res = await axios.get(`/api/recruiter/jobs/ranking/result/${rid}`);
+            const data = res?.data || {};
+            const sortedList = (data.applications || []).sort((a,b) => (b?.score ?? 0) - (a?.score ?? 0));
+            data.applications = sortedList;
+            setJob(data);
+            clearInterval(t);
+            setPollTimer(null);
+            setRankingJobId(null);
+            setLoading(false);
+          } else if (state === 'error') {
+            clearInterval(t);
+            setPollTimer(null);
+            setRankingJobId(null);
+            setLoading(false);
+          }
+        } catch (e) {
+          clearInterval(t);
+          setPollTimer(null);
+          setRankingJobId(null);
+          setLoading(false);
+        }
+      }, 5000);
+      setPollTimer(t);
     } catch (error) {
       console.error("Error fetching job:", error);
       setSnackbar({
@@ -375,18 +406,21 @@ const ApplicantsListPage = () => {
     }
   };
 
+  const fetchedRef = useRef(false);
+
   useEffect(() => {
     console.log("Job   callingApi:", callingApi);
-    if (id && !callingApi) {
-      setCallingApi(true);
+    if (id && !fetchedRef.current) {
+    fetchedRef.current = true;
       fetchJobById(id);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, []);
 
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
+       <LoadingOverlay isLoading={!apiResponseStatus} />
       <TopNav />
 
       <Box sx={{ display: "flex", mt: 3, px: 3, gap: 2 }}>
@@ -394,7 +428,7 @@ const ApplicantsListPage = () => {
 
         {/* Center Content */}
         <Box sx={{ flex: 1 }}>
-          <LoadingOverlay isLoading={loading} />
+         
 
           {/* Shortlisted Candidates */}
           {job?.applications?.length > 0 && (
@@ -478,7 +512,7 @@ const ApplicantsListPage = () => {
                       label={`Score: ${
                       app?.score !== undefined && app?.score !== null
                         ? Number(app?.score).toFixed(2)
-                        : "N/A"
+                        : (!apiResponseStatus && "Ranking...") || "N/A"
                       }`}
                       color="success"
                       sx={{

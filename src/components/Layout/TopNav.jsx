@@ -11,17 +11,50 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import { Link as RouterLink } from 'react-router-dom'; // Assuming you're using react-router
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import axios from '../../api/axios';
+import { setField } from '../../reducers/profileReducer';
+import Swal from 'sweetalert2'
 
 const TopNav = () => {
     const { signOut, user } = useAuthenticator(); 
   const [anchorEl, setAnchorEl] = useState(null);
+  const dispatch = useDispatch();
 
   
   const profile = useSelector(state => state.profileReducer.profile);
   const userType = useSelector(state => state.profileReducer.userType);
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
+  };
+
+  const handleBecomeRecruiter = async () => {
+    try {
+           // need swal confirmation here
+      const swalResult = await Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to switch your account to Recruiter!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, switch it!",
+        cancelButtonText: "No, cancel!",
+        reverseButtons: true,
+      });
+
+      if (!swalResult.isConfirmed) return;
+
+ 
+      const id = localStorage.getItem('userId');
+      const res = await axios.put('/api/candidate/users/role', { id, userTypes: 'Recruiter' });
+
+      // if (res.status === 200) {
+      //   // reload the page to reflect changes
+      //   window.location.reload();
+      // }
+        
+    } catch (e) {
+      console.error('Failed to update role', e);
+    }
   };
   const topMenuLinks = useMemo(() => {
   const baseLinks  =[
@@ -148,6 +181,16 @@ const TopNav = () => {
       )}
     </Box>
   ))}
+  {userType === 'Candidate' && (
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#1976d2' }}>
+      <IconButton onClick={handleBecomeRecruiter} style={{ padding: 0 }}>
+        <AutoFixHighIcon sx={{ fontSize: { xs: 20, md: 24 } }} />
+      </IconButton>
+      <Typography variant="caption" sx={{ fontSize: '0.65rem', mt: 0.2, display: { xs: 'none', md: 'block' } }} onClick={handleBecomeRecruiter}>
+        Become Recruiter
+      </Typography>
+    </Box>
+  )}
 </Stack>
 
         {/* Right Side - Profile */}
