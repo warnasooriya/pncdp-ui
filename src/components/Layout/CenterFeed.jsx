@@ -87,7 +87,8 @@ const CenterFeed = () => {
   const [videoDescription, setVideoDescription] = useState("");
 
    const profile = useSelector(state => state.profileReducer.profile);
-   const currentUserId = profile?._id || localStorage.getItem('userId');
+
+   const currentUserId = profile?.userId || localStorage.getItem('userId');
   // Event creation state
   const [eventData, setEventData] = useState({
     title: "",

@@ -7,7 +7,6 @@ import GroupIcon from '@mui/icons-material/Group';
 import WorkIcon from '@mui/icons-material/Work';
 import MessageIcon from '@mui/icons-material/Message';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-
 import { Link as RouterLink } from 'react-router-dom'; // Assuming you're using react-router
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
@@ -45,12 +44,15 @@ const TopNav = () => {
 
  
       const id = localStorage.getItem('userId');
-      const res = await axios.put('/api/candidate/users/role', { id, userTypes: 'Recruiter' });
+      const res = await axios.put('/api/candidate/users/role', { id, userType: 'Recruiter' });
 
-      // if (res.status === 200) {
-      //   // reload the page to reflect changes
-      //   window.location.reload();
-      // }
+      
+
+      if (res.status === 200) {
+        await axios.put('/api/candidate/users/cognito-attributes', { id, attributes: { 'custom:userTypes': 'Recruiter' } });
+        dispatch(setField({ name: 'userType', value: 'Recruiter' }));
+        localStorage.setItem('userType', 'Recruiter');
+      }
         
     } catch (e) {
       console.error('Failed to update role', e);
@@ -181,7 +183,7 @@ const TopNav = () => {
       )}
     </Box>
   ))}
-  {userType === 'Candidate' && (
+  {userType === 'Candidate' || !userType && (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#1976d2' }}>
       <IconButton onClick={handleBecomeRecruiter} style={{ padding: 0 }}>
         <AutoFixHighIcon sx={{ fontSize: { xs: 20, md: 24 } }} />

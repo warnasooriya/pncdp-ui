@@ -5,8 +5,25 @@ import axios from "../api/axios";
 // Post creation
 export const createPost = async (postData) => {
   try {
-    const response = await axios.post('/api/candidate/posts', postData);
-    return response.data;
+    const hasFile = postData && postData.media && (postData.media instanceof File || postData.media instanceof Blob);
+    if (hasFile) {
+      const form = new FormData();
+      form.append('userId', String(postData.userId || ''));
+      form.append('content', String(postData.content || ''));
+      if (postData.privacy) form.append('privacy', String(postData.privacy));
+      if (postData.hashtags) form.append('hashtags', JSON.stringify(postData.hashtags));
+      if (postData.mentions) form.append('mentions', JSON.stringify(postData.mentions));
+      form.append('media', postData.media);
+      if (postData.postType) form.append('postType', String(postData.postType));
+
+      const response = await axios.post('/api/candidate/posts', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } else {
+      const response = await axios.post('/api/candidate/posts', postData);
+      return response.data;
+    }
   } catch (error) {
     console.error('Error creating post:', error);
     throw error;
